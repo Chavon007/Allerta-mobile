@@ -13,6 +13,7 @@ interface ButtonProps extends PressableProps {
   loadingText?: string;
   icon?: React.ReactNode;
   className?: string;
+  textClassName?: string;
 }
 
 const Button: React.FC<ButtonProps> = ({
@@ -22,10 +23,13 @@ const Button: React.FC<ButtonProps> = ({
   icon,
   disabled,
   className = "",
+  textClassName = "",
   ...props
 }) => {
   const baseStyle =
     "bg-background1 w-full rounded-3xl py-4 px-6 flex-row items-center justify-center gap-2 active:opacity-70";
+
+  const baseTextStyle = "text-background font-semibold text-lg font-button";
 
   return (
     <Pressable
@@ -36,13 +40,13 @@ const Button: React.FC<ButtonProps> = ({
       {isLoading ? (
         <>
           <ActivityIndicator color="#1e5975" />
-          <Text className="text-background font-semibold text-lg font-button">
+          <Text className={twMerge(baseTextStyle, textClassName)}>
             {loadingText}
           </Text>
         </>
       ) : (
         <>
-          <Text className="text-background font-semibold text-lg font-button">
+          <Text className={twMerge(baseTextStyle, textClassName)}>
             {children}
           </Text>
           {icon}

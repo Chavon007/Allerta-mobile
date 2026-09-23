@@ -1,6 +1,7 @@
 import { MaterialCommunityIcons, Ionicons } from "@expo/vector-icons";
 import Button from "@/components/Button";
 import { Text, View } from "react-native";
+import { router } from "expo-router";
 
 const Index = () => {
   return (
@@ -16,13 +17,14 @@ const Index = () => {
         <Text className="text-3xl font-header uppercase font-bold text-text mt-2">
           Allerta
         </Text>
-        <Text className="text-text font-semibold text-xl font-body">
+        <Text className="text-text font-medium text-base font-body">
           One tap. Your people will know.
         </Text>
       </View>
 
       <View className="w-[90%] mx-auto flex gap-3">
         <Button
+          onPress={() => router.push("/onboarding/step1")}
           icon={<Ionicons name="arrow-forward" size={18} color="#1e5975" />}
         >
           Get started
