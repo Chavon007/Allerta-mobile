@@ -99,7 +99,7 @@ const Form = <
     await onSubmit(data);
     if (storageKey) await AsyncStorage.removeItem(storageKey);
   });
-  return <View className={className}> {children(methods, submitForm)}</View>;
+  return <View className={className}>{children(methods, submitForm)}</View>;
 };
 
 export default Form;

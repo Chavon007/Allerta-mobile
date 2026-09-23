@@ -44,19 +44,19 @@ export const InputField: React.FC<InputFieldProps> = ({
         <Text
           className={twMerge(
             "text-black/90 text-sm font-light",
-            labelClassName,
+            labelClassName
           )}
         >
           {label}
         </Text>
-        {small && (
+        {small ? (
           <Text className={twMerge("text-xs", smallClassName)}>{small}</Text>
-        )}
-        {labelRight}
+        ) : null}
+        {labelRight ? labelRight : null}
       </View>
 
       <View className="flex-row items-center relative">
-        {icon}
+        {icon ? icon : null}
         <TextInput
           secureTextEntry={isPasswordType && !showPassword}
           className="bg-transparent border border-black rounded-xl text-xs text-black/80 font-bold p-3 w-full"
@@ -67,7 +67,7 @@ export const InputField: React.FC<InputFieldProps> = ({
           {...props}
         />
 
-        {isPasswordType && (
+        {isPasswordType ? (
           <Pressable
             className="absolute right-2"
             onPress={() => setShowPassword((prev) => !prev)}
@@ -78,12 +78,12 @@ export const InputField: React.FC<InputFieldProps> = ({
               color="#404a54"
             />
           </Pressable>
-        )}
+        ) : null}
       </View>
 
-      {error?.message && (
+      {error?.message ? (
         <Text className="text-red-500 text-xs">{String(error.message)}</Text>
-      )}
+      ) : null}
     </View>
   );
 };

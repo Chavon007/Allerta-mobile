@@ -4,10 +4,20 @@ import { LoginDTO, LoginSchema } from "@/schema/authSchema";
 import { InputField } from "@/components/inputField";
 import Button from "@/components/Button";
 import { useRouter, Link } from "expo-router";
-import { useState } from "react";
+
+import { useLoginMutation } from "@/api/auth";
 const Login = () => {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
+  const { mutate, isPending } = useLoginMutation();
+
+  const handleLogin = (data: LoginDTO) => {
+    mutate(data, {
+      onSuccess: () => {
+        router.push("/create-account");
+      },
+    });
+  };
+
   return (
     <View>
       <View>
@@ -15,8 +25,8 @@ const Login = () => {
         <Text>Log in to reach your trusted circle.</Text>
       </View>
       <View>
-        <Form className="" onSubmit={} schema={LoginSchema}>
-          {(methods) => (
+        <Form className="" onSubmit={handleLogin} schema={LoginSchema}>
+          {(methods, submitForm) => (
             <>
               <View>
                 <InputField
@@ -36,8 +46,8 @@ const Login = () => {
               </View>
 
               <Button
-                isLoading={isLoading}
-                onPress={}
+                isLoading={isPending}
+                onPress={submitForm}
                 loadingText="Logging in.."
               >
                 Login{" "}
