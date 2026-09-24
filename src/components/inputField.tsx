@@ -2,17 +2,12 @@ import React, { useState } from "react";
 import { View, Text, TextInput, Pressable, TextInputProps } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { twMerge } from "tailwind-merge";
+import { Control, Controller, FieldError, Merge, FieldErrorsImpl, FieldValues, Path } from "react-hook-form";
 
-import {
-  UseFormRegisterReturn,
-  FieldError,
-  Merge,
-  FieldErrorsImpl,
-} from "react-hook-form";
-
-interface InputFieldProps extends TextInputProps {
+interface InputFieldProps<T extends FieldValues> extends Omit<TextInputProps, "onChangeText" | "value"> {
   label?: string;
-  registration: Partial<UseFormRegisterReturn>;
+  name: Path<T>;
+  control: Control<T>;
   error?: FieldError | Merge<FieldError, FieldErrorsImpl<any>>;
   icon?: React.ReactNode;
   labelRight?: React.ReactNode;
@@ -22,9 +17,10 @@ interface InputFieldProps extends TextInputProps {
   smallClassName?: string;
 }
 
-export const InputField: React.FC<InputFieldProps> = ({
+ function InputField<T extends FieldValues>({
   label,
-  registration,
+  name,
+  control,
   error,
   small,
   icon,
@@ -34,19 +30,14 @@ export const InputField: React.FC<InputFieldProps> = ({
   smallClassName,
   secureTextEntry,
   ...props
-}) => {
+}: InputFieldProps<T>) {
   const [showPassword, setShowPassword] = useState(false);
   const isPasswordType = !!secureTextEntry;
 
   return (
     <View className={className}>
       <View className="flex-row items-center justify-between p-2">
-        <Text
-          className={twMerge(
-            "text-black/90 text-sm font-light",
-            labelClassName
-          )}
-        >
+        <Text className={twMerge("text-text3 text-sm font-light font-body", labelClassName)}>
           {label}
         </Text>
         {small ? (
@@ -57,14 +48,19 @@ export const InputField: React.FC<InputFieldProps> = ({
 
       <View className="flex-row items-center relative">
         {icon ? icon : null}
-        <TextInput
-          secureTextEntry={isPasswordType && !showPassword}
-          className="bg-transparent border border-black rounded-xl text-xs text-black/80 font-bold p-3 w-full"
-          onChangeText={(text) =>
-            registration.onChange?.({ target: { value: text } } as any)
-          }
-          onBlur={registration.onBlur as any}
-          {...props}
+        <Controller
+          control={control}
+          name={name}
+          render={({ field: { onChange, onBlur, value } }) => (
+            <TextInput
+              secureTextEntry={isPasswordType && !showPassword}
+              className="bg-white w-[98%]  rounded-3xl p-4 text-xs  focus:outline-none font-bold mx-auto placeholder:text-text1"
+              onChangeText={onChange}
+              onBlur={onBlur}
+              value={value ?? ""}
+              {...props}
+            />
+          )}
         />
 
         {isPasswordType ? (
@@ -82,8 +78,10 @@ export const InputField: React.FC<InputFieldProps> = ({
       </View>
 
       {error?.message ? (
-        <Text className="text-red-500 text-xs">{String(error.message)}</Text>
+        <Text className="text-red-500 w-[90%] mx-auto mt-1 font-body text-xs">{String(error.message)}</Text>
       ) : null}
     </View>
   );
-};
+}
+
+export default InputField
