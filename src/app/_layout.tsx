@@ -1,14 +1,22 @@
 import { Stack } from "expo-router";
 import "./global.css";
-
+import { useEffect } from "react";
 import { useFonts } from "expo-font";
 import {
   Manrope_600SemiBold,
   Manrope_700Bold,
 } from "@expo-google-fonts/manrope";
+import Toast from "react-native-toast-message";
 import { Inter_400Regular, Inter_500Medium } from "@expo-google-fonts/inter";
-
+import { useAuthStore } from "@/store/authStore";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 export default function RootLayout() {
+  const queryClient = new QueryClient();
+  const hydrate = useAuthStore((state) => state.hydrate);
+
+  useEffect(() => {
+    hydrate();
+  }, []);
   const [fontsLoaded] = useFonts({
     Manrope_600SemiBold,
     Manrope_700Bold,
@@ -17,14 +25,19 @@ export default function RootLayout() {
   });
 
   if (!fontsLoaded) {
-    return null; 
+    return null;
   }
 
   return (
-    <Stack
-      screenOptions={{
-        headerShown: false,
-      }}
-    />
+    <>
+      <QueryClientProvider client={queryClient}>
+        <Stack
+          screenOptions={{
+            headerShown: false,
+          }}
+        />
+        <Toast />
+      </QueryClientProvider>
+    </>
   );
 }
