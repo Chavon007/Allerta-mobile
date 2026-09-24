@@ -82,6 +82,7 @@ const CreateAccount = () => {
                   <Button
                     textClassName="text-white"
                     className="bg-background"
+                    spinnerColor="#ffffff"
                     isLoading={isPending}
                     onPress={submitForm}
                     loadingText="Creating account..."

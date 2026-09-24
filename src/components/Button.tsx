@@ -14,6 +14,7 @@ interface ButtonProps extends PressableProps {
   icon?: React.ReactNode;
   className?: string;
   textClassName?: string;
+  spinnerColor?: string;
 }
 
 const Button: React.FC<ButtonProps> = ({
@@ -24,6 +25,7 @@ const Button: React.FC<ButtonProps> = ({
   disabled,
   className = "",
   textClassName = "",
+  spinnerColor = "#1e5975",
   ...props
 }) => {
   const baseStyle =
@@ -39,7 +41,7 @@ const Button: React.FC<ButtonProps> = ({
     >
       {isLoading ? (
         <>
-          <ActivityIndicator color="#1e5975" />
+          <ActivityIndicator color={spinnerColor} />
           <Text className={twMerge(baseTextStyle, textClassName)}>
             {loadingText}
           </Text>

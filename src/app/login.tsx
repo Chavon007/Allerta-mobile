@@ -29,7 +29,11 @@ const Login = () => {
           Log in to reach your trusted circle.
         </Text>
         <View>
-          <Form className="gap-5 py-5" onSubmit={handleLogin} schema={LoginSchema}>
+          <Form
+            className="gap-5 py-5"
+            onSubmit={handleLogin}
+            schema={LoginSchema}
+          >
             {(methods, submitForm) => (
               <>
                 <View className="gap-3">
@@ -54,6 +58,7 @@ const Login = () => {
                 <Button
                   textClassName="text-white"
                   className="bg-background"
+                  spinnerColor="#ffffff"
                   isLoading={isPending}
                   onPress={submitForm}
                   loadingText="Logging in.."

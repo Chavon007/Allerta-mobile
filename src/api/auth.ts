@@ -4,9 +4,13 @@ import apiClient from "@/service/api";
 import { useAuthStore } from "@/store/authStore";
 import Toast from "react-native-toast-message";
 
-
 const signupFn = async (data: SignupDTO) => {
-  return apiClient.post("/auth/signup", data);
+  return apiClient.post("/auth/signup", {
+    full_name: data.fullName,
+    email: data.email,
+    username: data.username,
+    password: data.password,
+  });
 };
 
 const loginFn = async (data: LoginDTO) => {
