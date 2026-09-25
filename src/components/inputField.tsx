@@ -6,8 +6,8 @@ import { Control, Controller, FieldError, Merge, FieldErrorsImpl, FieldValues, P
 
 interface InputFieldProps<T extends FieldValues> extends Omit<TextInputProps, "onChangeText" | "value"> {
   label?: string;
-  name: Path<T>;
-  control: Control<T>;
+  name?: Path<T>;
+  control?: Control<T>;
   error?: FieldError | Merge<FieldError, FieldErrorsImpl<any>>;
   icon?: React.ReactNode;
   labelRight?: React.ReactNode;
