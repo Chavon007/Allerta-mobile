@@ -1,9 +1,5 @@
-import axios, {
-  AxiosError,
-  AxiosResponse,
-  InternalAxiosRequestConfig,
-} from "axios";
-import { useAuthStore } from "@/store/authStore";
+import axios from "axios";
+import * as SecureStore from "expo-secure-store";
 
 const apiClient = axios.create({
   baseURL: process.env.EXPO_PUBLIC_BASE_URL,
@@ -12,8 +8,9 @@ const apiClient = axios.create({
     "Content-Type": "application/json",
   },
 });
-apiClient.interceptors.request.use((config) => {
-  const token = useAuthStore.getState().token;
+
+apiClient.interceptors.request.use(async (config) => {
+  const token = await SecureStore.getItemAsync("auth_token");
 
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
