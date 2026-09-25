@@ -6,5 +6,5 @@ export default function Index() {
 
   if (isLoading) return null;
   if (!isLoggedIn) return <Redirect href="/onboarding" />;
-  return <Redirect href="/login" />;
+  return <Redirect href="/(tab)/home" />;
 }

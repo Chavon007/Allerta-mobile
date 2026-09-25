@@ -20,8 +20,13 @@ export const useAuthStore = create<AuthState>((set) => ({
   isLoading: true,
 
   login: async (user, token) => {
-    await SecureStore.setItemAsync("auth_token", token);
     set({ user, token, isLoggedIn: true });
+
+    try {
+      await SecureStore.setItemAsync("auth_token", token);
+    } catch (e) {
+      console.log("Failed to save auth token:", e);
+    }
   },
 
   logout: async () => {
@@ -37,7 +42,7 @@ export const useAuthStore = create<AuthState>((set) => ({
         return;
       }
       set({ token });
-      const res = await apiClient.get("/me");
+      const res = await apiClient.get("/auth/me");
       set({ user: res.data, isLoggedIn: true, isLoading: false });
     } catch {
       set({ token: null, user: null, isLoggedIn: false, isLoading: false });

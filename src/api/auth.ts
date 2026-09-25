@@ -6,7 +6,7 @@ import Toast from "react-native-toast-message";
 
 const signupFn = async (data: SignupDTO) => {
   return apiClient.post("/auth/signup", {
-    full_name: data.fullName,
+    full_name: data.full_name,
     email: data.email,
     username: data.username,
     password: data.password,
@@ -18,7 +18,7 @@ const loginFn = async (data: LoginDTO) => {
 };
 
 const fetchUser = async () => {
-  return apiClient.get("/me");
+  return apiClient.get("/auth/me");
 };
 export const useSignupMutation = () => {
   return useMutation({
@@ -38,8 +38,7 @@ export const useLoginMutation = () => {
       const loginRes = await loginFn(data);
       const { token, user } = loginRes.data;
       await useAuthStore.getState().login(user, token);
-      const userRes = await fetchUser();
-      return userRes.data;
+      return user;
     },
     onSuccess: () => {
       Toast.show({
@@ -49,7 +48,7 @@ export const useLoginMutation = () => {
       });
     },
     onError(error: any) {
-      const message = error?.response?.data.message || "Faled to login";
+      const message = error?.response?.data?.message || "Failed to login";
       Toast.show({
         type: "error",
         text1: message,
