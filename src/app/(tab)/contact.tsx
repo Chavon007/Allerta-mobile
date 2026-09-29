@@ -1,5 +1,11 @@
 import React, { useState } from "react";
-import { View, Text, ScrollView, Pressable } from "react-native";
+import {
+  View,
+  Text,
+  KeyboardAvoidingView,
+  ScrollView,
+  Pressable,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import ContactCard from "@/components/contactCard";
 import { Ionicons, AntDesign } from "@expo/vector-icons";
@@ -83,18 +89,26 @@ const Contact = () => {
       </ScrollView>
 
       {modal && (
-        <View className="absolute inset-0 justify-end bg-black/30">
-          <View className="h-[45%] rounded-t-3xl bg-white px-5 pb-8 pt-6">
-            <Text className="font-headerMedium text-2xl text-text3">
-              Add contact through their Username or email
+        <KeyboardAvoidingView
+          behavior="padding"
+          className="absolute inset-0 justify-end bg-black/30"
+        >
+          <View className="rounded-t-3xl bg-white px-5 pb-8 pt-6 h-[40%]">
+            <Text className="font-headerMedium text-base text-text3">
+              Add contact through their username or email
             </Text>
 
             <View className="mt-6 gap-3">
-              <Form<AddContactDTO> className="" onSubmit={() => {}} schema={addContactSchema}>
+              <Form<AddContactDTO>
+                className=""
+                onSubmit={() => {}}
+                schema={addContactSchema}
+              >
                 {(methods) => {
                   const handleAddContact = (data: AddContactDTO) => {
                     mutate(data, {
                       onSuccess: () => {
+                        setModal(false);
                         router.replace("/(tab)/contact");
                       },
                       onError: (error: any) => {
@@ -133,7 +147,7 @@ const Contact = () => {
                       </View>
 
                       <Pressable onPress={() => setModal(false)}>
-                        <Text className="font-bodyMedium text-xm text-backgroundLight font-medium">
+                        <Text className="font-bodyMedium text-center mt-6 text-xm text-backgroundLight font-medium">
                           Back
                         </Text>
                       </Pressable>
@@ -143,7 +157,7 @@ const Contact = () => {
               </Form>
             </View>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       )}
     </SafeAreaView>
   );
