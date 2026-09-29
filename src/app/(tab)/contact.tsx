@@ -5,43 +5,55 @@ import {
   KeyboardAvoidingView,
   ScrollView,
   Pressable,
+  ActivityIndicator,
 } from "react-native";
+
 import { SafeAreaView } from "react-native-safe-area-context";
 import ContactCard from "@/components/contactCard";
 import { Ionicons, AntDesign } from "@expo/vector-icons";
 import Form from "@/components/Form";
 import InputField from "@/components/inputField";
 import Button from "@/components/Button";
-import { useAddContactMutation } from "@/api/addContact";
+import { useAddContactMutation, useFetchContact } from "@/api/emergency";
 import { AddContactDTO, addContactSchema } from "@/schema/contactSchema";
 import { router } from "expo-router";
-
-const contacts: {
-  initials: string;
-  full_name: string;
-  identifier: string;
-  status: string;
-  statusIcon: keyof typeof Ionicons.glyphMap;
-}[] = [
-  {
-    initials: "SJ",
-    full_name: "Sarah Johnson",
-    identifier: "@sarahjohnson",
-    status: "Connected",
-    statusIcon: "checkmark",
-  },
-  {
-    initials: "MA",
-    full_name: "Michael Azuh",
-    identifier: "michael@gmail.com",
-    status: "External",
-    statusIcon: "mail",
-  },
-];
 
 const Contact = () => {
   const [modal, setModal] = useState(false);
   const { mutate, isPending } = useAddContactMutation();
+  const { data, isLoading, isError } = useFetchContact();
+
+  const getInitials = (full_name: string) => {
+    const names = full_name.trim().split(" ");
+
+    if (names.length === 1) {
+      return names[0][0].toUpperCase();
+    }
+
+    return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
+  };
+
+  if (isLoading)
+    return (
+      <View className="flex-1 items-center justify-center bg-background1">
+        <ActivityIndicator color="#3d7a9a" />
+        <Text className="mt-2 font-bodyMedium text-xs text-text1">
+          Loading contacts...
+        </Text>
+      </View>
+    );
+
+  if (isError)
+    return (
+      <View className="flex-1 items-center justify-center bg-background1 px-5">
+        <Text className="font-headerMedium text-base text-text3">
+          Unable to load contacts
+        </Text>
+        <Text className="mt-1 text-center font-body text-xs text-text1">
+          Something went wrong while fetching your emergency contacts.
+        </Text>
+      </View>
+    );
 
   return (
     <SafeAreaView className="flex-1 bg-background1">
@@ -62,17 +74,33 @@ const Contact = () => {
           <Text className="mb-3 font-headerMedium text-lg text-text3">
             Emergency contacts
           </Text>
+
           <View className="gap-3">
-            {contacts.map((c) => (
-              <ContactCard
-                key={c.full_name}
-                identifier={c.identifier}
-                initials={c.initials}
-                full_name={c.full_name}
-                status={c.status}
-                statusIcon={c.statusIcon}
-              />
-            ))}
+            {data && data.length > 0 ? (
+              data.map((c) => {
+                const isEmail = c.identifier_type === "email";
+
+                return (
+                  <ContactCard
+                    key={c.id}
+                    identifier={c.identifier}
+                    initials={getInitials(c.full_name)}
+                    full_name={c.full_name}
+                    status={isEmail ? "External" : "Connected"}
+                    statusIcon={isEmail ? "mail" : "checkmark"}
+                  />
+                );
+              })
+            ) : (
+              <View className="items-center rounded-2xl border border-[#e3eaf0] bg-white px-5 py-8">
+                <Text className="font-headerMedium text-base text-text3">
+                  No emergency contacts
+                </Text>
+                <Text className="mt-1 text-center font-body text-xs text-text1">
+                  You have not added any emergency contacts yet.
+                </Text>
+              </View>
+            )}
           </View>
         </View>
 
@@ -109,11 +137,11 @@ const Contact = () => {
                     mutate(data, {
                       onSuccess: () => {
                         setModal(false);
-                        router.replace("/(tab)/contact");
                       },
                       onError: (error: any) => {
                         const fieldError =
                           error?.response?.data?.errors?.identifier?.[0];
+
                         if (fieldError) {
                           methods.setError("identifier", {
                             message: fieldError,
@@ -134,6 +162,7 @@ const Contact = () => {
                           placeholder="davidJohn or test@gmail.com"
                           error={methods.formState.errors.identifier}
                         />
+
                         <Button
                           textClassName="text-white"
                           className="bg-background mt-2"
