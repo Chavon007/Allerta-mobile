@@ -10,13 +10,12 @@ import {
 
 import { SafeAreaView } from "react-native-safe-area-context";
 import ContactCard from "@/components/contactCard";
-import { Ionicons, AntDesign } from "@expo/vector-icons";
+import { AntDesign } from "@expo/vector-icons";
 import Form from "@/components/Form";
 import InputField from "@/components/inputField";
 import Button from "@/components/Button";
 import { useAddContactMutation, useFetchContact } from "@/api/emergency";
 import { AddContactDTO, addContactSchema } from "@/schema/contactSchema";
-import { router } from "expo-router";
 
 const Contact = () => {
   const [modal, setModal] = useState(false);
