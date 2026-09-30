@@ -1,8 +1,15 @@
 import React from "react";
 import EmergencyButton from "@/components/EmergencyButton";
-import { View, Text, Pressable, ScrollView } from "react-native";
+import {
+  View,
+  Text,
+  Pressable,
+  ScrollView,
+  ActivityIndicator,
+} from "react-native";
 import { useAuthStore } from "@/store/authStore";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useFetchContact } from "@/api/emergency";
 import {
   MaterialCommunityIcons,
   Ionicons,
@@ -11,17 +18,6 @@ import {
   FontAwesome,
 } from "@expo/vector-icons";
 import { Link } from "expo-router";
-
-const contact = [
-  {
-    text: "JA",
-    name: "John",
-  },
-  {
-    text: "MA",
-    name: "Michael",
-  },
-];
 
 const items = [
   {
@@ -57,6 +53,20 @@ const items = [
 const Home = () => {
   const user = useAuthStore((state) => state.user);
 
+  const { data, isLoading, isError } = useFetchContact();
+
+  const count = data?.length ?? 0;
+  const MAX_CONTACTS = 3;
+
+  const getInitials = (full_name: string) => {
+    const name = full_name.trim().split(" ");
+
+    if (name.length == 1) {
+      return name[0][0].toUpperCase();
+    }
+
+    return `${name[0][0]}${name[name.length - 1][0]}`.toUpperCase();
+  };
   const time = new Date().getHours();
 
   let greetings;
@@ -115,6 +125,7 @@ const Home = () => {
           <EmergencyButton />
         </View>
 
+      
         {/* Trusted Circle */}
         <View className="mt-8">
           <View className="mb-3 flex-row items-center justify-between">
@@ -132,57 +143,78 @@ const Home = () => {
           </View>
 
           <View className="rounded-2xl border border-[#e3eaf0] bg-white p-4">
-            {/* Circle Summary */}
+            
             <View className="flex-row items-center justify-between">
-              <View className="flex-row items-center gap-3">
-                <View className="h-10 w-10 items-center justify-center rounded-full bg-background">
-                  <Ionicons name="people-outline" size={18} color="white" />
-                </View>
-
-                <View>
-                  <Text className="font-bodyMedium text-sm text-text3">
-                    2 emergency contacts
-                  </Text>
-
-                  <Text className="mt-1 font-body text-xs text-text1">
-                    2/3 slots used
+              {isLoading ? (
+                <View className="flex-row items-center gap-3">
+                  <ActivityIndicator color="#3d7a9a" />
+                  <Text className="font-bodyMedium text-xs text-text1">
+                    Loading contacts...
                   </Text>
                 </View>
-              </View>
-
-              <View className="rounded-full bg-green-100 px-3 py-1.5">
-                <Text className="font-bodyMedium text-xs text-green-500">
-                  Ready
+              ) : isError ? (
+                <Text className="font-bodyMedium text-xs text-red-500">
+                  Unable to load contacts
                 </Text>
-              </View>
+              ) : (
+                <View className="flex-row items-center gap-3">
+                  <View className="h-10 w-10 items-center justify-center rounded-full bg-background">
+                    <Ionicons name="people-outline" size={18} color="white" />
+                  </View>
+
+                  <View>
+                    <Text className="font-bodyMedium text-sm text-text3">
+                      {count} emergency {count === 1 ? "contact" : "contacts"}
+                    </Text>
+                    <Text className="mt-1 font-body text-xs text-text1">
+                      {count}/{MAX_CONTACTS} slots used
+                    </Text>
+                  </View>
+                </View>
+              )}
+
+              {count > 0 && (
+                <View className="rounded-full bg-green-100 px-3 py-1.5">
+                  <Text className="font-bodyMedium text-xs text-green-500">
+                    Ready
+                  </Text>
+                </View>
+              )}
             </View>
 
             {/* Contacts */}
             <View className="mt-5 flex-row items-center">
-              {contact.map((c) => (
-                <View key={c.name} className="mr-4 flex-row items-center gap-2">
-                  <View className="h-9 w-9 items-center justify-center rounded-full bg-[#ddeef8]">
-                    <Text className="font-headerMedium text-xs text-background">
-                      {c.text}
+              {isLoading || isError ? null : data && data.length > 0 ? (
+                data.map((c) => (
+                  <View key={c.id} className="mr-4 flex-row items-center gap-2">
+                    <View className="h-9 w-9 items-center justify-center rounded-full bg-[#ddeef8]">
+                      <Text className="font-headerMedium text-xs text-background">
+                        {getInitials(c.full_name)}
+                      </Text>
+                    </View>
+
+                    <Text className="font-bodyMedium text-xs text-text3">
+                      {c.full_name.split(" ")[0]}
                     </Text>
                   </View>
+                ))
+              ) : (
+                <Text className="font-body text-xs text-text1">
+                  You have not added any emergency contacts yet
+                </Text>
+              )}
 
-                  <Text className="font-bodyMedium text-xs text-text3">
-                    {c.name}
-                  </Text>
-                </View>
-              ))}
-
-              <Link href="/(tab)/contact" asChild>
-                <Pressable className="ml-auto h-9 w-9 items-center justify-center rounded-full border border-[#dce5ec]">
-                  <AntDesign name="plus" size={18} color="#1e5975" />
-                </Pressable>
-              </Link>
+              {!isLoading && !isError && count < MAX_CONTACTS && (
+                <Link href="/(tab)/contact" asChild>
+                  <Pressable className="ml-auto h-9 w-9 items-center justify-center rounded-full border border-[#dce5ec]">
+                    <AntDesign name="plus" size={18} color="#1e5975" />
+                  </Pressable>
+                </Link>
+              )}
             </View>
           </View>
         </View>
 
-        {/* Recent Activity */}
         {/* Recent Activity */}
         <View className="mt-8">
           <Text className="mb-3 font-headerMedium text-lg text-text3">
