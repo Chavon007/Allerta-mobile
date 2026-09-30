@@ -83,6 +83,7 @@ const Contact = () => {
                 return (
                   <ContactCard
                     key={c.id}
+                    id={c.id}
                     identifier={c.identifier}
                     initials={getInitials(c.full_name)}
                     full_name={c.full_name}

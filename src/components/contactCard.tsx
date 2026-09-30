@@ -1,8 +1,9 @@
-import { View, Text, Pressable } from "react-native";
+import { View, Text, Pressable, ActivityIndicator } from "react-native";
 import { MaterialCommunityIcons, Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
 
+import { useRemoveContact } from "@/api/emergency";
 interface ContactProps {
+  id: number;
   initials: string;
   full_name: string;
   identifier: string;
@@ -11,14 +12,19 @@ interface ContactProps {
 }
 
 const ContactCard = ({
+  id,
   initials,
   full_name,
   identifier,
   status,
   statusIcon,
 }: ContactProps) => {
-  const router = useRouter();
+  const { mutate, isPending } = useRemoveContact();
 
+  const handleRemoveContact = () => {
+    if (isPending) return;
+    mutate(id);
+  };
   return (
     <View className="rounded-2xl border border-[#e3eaf0] bg-white p-4">
       {/* Contact Info */}
@@ -65,18 +71,26 @@ const ContactCard = ({
 
       {/* Remove */}
       <Pressable
-        onPress={() => router.replace("/")}
-        className="mt-4 flex-row items-center justify-center rounded-xl border border-[#e3eaf0] py-2.5"
+        disabled={isPending}
+        onPress={handleRemoveContact}
+        className={`mt-4 flex-row items-center justify-center rounded-xl border border-[#e3eaf0] py-2.5 ${
+          isPending ? "opacity-50" : ""
+        }`}
       >
-        <MaterialCommunityIcons
-          name="delete-outline"
-          size={18}
-          color="#ef4444"
-        />
-
-        <Text className="ml-2 font-bodyMedium text-xs text-red-500">
-          Remove
-        </Text>
+        {isPending ? (
+          <ActivityIndicator size="small" color="#ef4444" />
+        ) : (
+          <>
+            <MaterialCommunityIcons
+              name="delete-outline"
+              size={18}
+              color="#ef4444"
+            />
+            <Text className="ml-2 font-bodyMedium text-xs text-red-500">
+              Remove
+            </Text>
+          </>
+        )}
       </Pressable>
     </View>
   );
