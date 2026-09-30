@@ -34,6 +34,8 @@ export const useSignupMutation = () => {
 
 export const useLoginMutation = () => {
   return useMutation({
+    retry: (failureCount, error: any) => !error?.response && failureCount < 2,
+    retryDelay: 1000,
     mutationFn: async (data: LoginDTO) => {
       const loginRes = await loginFn(data);
       const { token, user } = loginRes.data;
