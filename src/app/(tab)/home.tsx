@@ -125,7 +125,6 @@ const Home = () => {
           <EmergencyButton />
         </View>
 
-      
         {/* Trusted Circle */}
         <View className="mt-8">
           <View className="mb-3 flex-row items-center justify-between">
@@ -143,7 +142,6 @@ const Home = () => {
           </View>
 
           <View className="rounded-2xl border border-[#e3eaf0] bg-white p-4">
-            
             <View className="flex-row items-center justify-between">
               {isLoading ? (
                 <View className="flex-row items-center gap-3">
@@ -303,6 +301,13 @@ const Home = () => {
               );
             })}
           </View>
+        </View>
+
+        <View className="mt-5">
+          <Text className=" font-body text-xs text-text1">
+            Your location is not continuously shared. Live sharing begins only
+            during an active emergency.
+          </Text>
         </View>
       </ScrollView>
     </SafeAreaView>
