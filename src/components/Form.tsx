@@ -73,6 +73,16 @@ const Form = <
     })();
   }, [storageKey]);
 
+  const defaultsKey = JSON.stringify(defaultValues);
+  const isFirstRender = useRef(true);
+
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    if (defaultValues) methods.reset(defaultValues as any);
+  }, [defaultsKey]);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
     if (!storageKey) return;

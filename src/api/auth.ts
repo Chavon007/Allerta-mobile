@@ -3,6 +3,8 @@ import { LoginDTO, SignupDTO } from "@/schema/authSchema";
 import apiClient from "@/service/api";
 import { useAuthStore } from "@/store/authStore";
 import Toast from "react-native-toast-message";
+import { UpdateProfileDTO } from "@/schema/authSchema";
+import { success } from "zod";
 
 const signupFn = async (data: SignupDTO) => {
   return apiClient.post("/auth/signup", {
@@ -19,6 +21,11 @@ const loginFn = async (data: LoginDTO) => {
 
 const fetchUser = async () => {
   return apiClient.get("/auth/me");
+};
+
+const updateProfile = async (data: UpdateProfileDTO) => {
+  const response = await apiClient.put("/auth/profile/update", data);
+  return response.data;
 };
 export const useSignupMutation = () => {
   return useMutation({
@@ -51,6 +58,29 @@ export const useLoginMutation = () => {
     },
     onError(error: any) {
       const message = error?.response?.data?.message || "Failed to login";
+      Toast.show({
+        type: "error",
+        text1: message,
+      });
+    },
+  });
+};
+
+export const useUpdateProfile = () => {
+  return useMutation({
+    mutationFn: async (data: UpdateProfileDTO) => {
+      const res = await updateProfile(data);
+      useAuthStore.getState().setUser(res.data);
+    },
+    onSuccess: () => {
+      Toast.show({
+        type: "success",
+        text1: "Profile updated successfully",
+      });
+    },
+    onError: (error: any) => {
+      const message =
+        error?.response?.data?.message || "Failed to update profile";
       Toast.show({
         type: "error",
         text1: message,

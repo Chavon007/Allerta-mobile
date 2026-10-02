@@ -6,6 +6,7 @@ import { User } from "@/types/User";
 interface AuthState {
   token: string | null;
   user: User | null;
+  setUser: (user: User) => void;
   isLoggedIn: boolean;
   isLoading: boolean;
   login: (user: User, token: string) => Promise<void>;
@@ -28,7 +29,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       console.log("Failed to save auth token:", e);
     }
   },
-
+  setUser: (user) => set({ user }),
   logout: async () => {
     await SecureStore.deleteItemAsync("auth_token");
     set({ user: null, token: null, isLoggedIn: false });

@@ -13,6 +13,9 @@ import { Link, useRouter } from "expo-router";
 import Form from "@/components/Form";
 import Button from "@/components/Button";
 import InputField from "@/components/inputField";
+import { UpdateProfileDTO, UpdateProfileSchema } from "@/schema/authSchema";
+import { useUpdateProfile } from "@/api/auth";
+import { useFetchContact } from "@/api/emergency";
 import {
   Feather,
   SimpleLineIcons,
@@ -22,7 +25,7 @@ import {
   EvilIcons,
   FontAwesome5,
 } from "@expo/vector-icons";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 
 interface safetySectionProps {
   icon: string;
@@ -47,6 +50,8 @@ interface accountSectionProps {
   iconLibrary: "EvilIcons" | "Ionicons" | "FontAwesome5" | "MaterialIcons";
 }
 
+const MAX_CONTACTS = 3;
+
 const privacyList = [
   {
     title: "Your location is not continuously shared by default.",
@@ -67,14 +72,14 @@ const safetySection: safetySectionProps[] = [
   {
     icon: "people-outline",
     text: "Emergency contacts",
-    description: "",
+    description: "People in your trusted circle",
     iconLibrary: "Ionicons",
     link: "/(tab)/contact",
   },
   {
     icon: "credit-card-outline",
     text: "Contact slots & plan",
-    description: "Free plan. 3 contacts included",
+    description: `Free plan. ${MAX_CONTACTS} contacts included`,
     iconLibrary: "MaterialCommunityIcons",
     link: "/",
   },
@@ -140,11 +145,11 @@ const accountSection: accountSectionProps[] = [
 const Profile = () => {
   const logout = useAuthStore((state) => state.logout);
   const user = useAuthStore((state) => state.user);
-
+  const { data, isLoading, isError } = useFetchContact();
   const [openPrivacy, setOpenPrivacy] = useState(false);
   const [editProfile, setEditProfile] = useState(false);
   const [activeModal, setActiveModal] = useState<string | null>(null);
-
+  const { mutate, isPending } = useUpdateProfile();
   const [permissions, setPermissions] = useState<Record<string, boolean>>({
     location: false,
     notifications: false,
@@ -158,6 +163,31 @@ const Profile = () => {
     }));
   };
 
+  const count = data?.length ?? 0;
+
+  const contactsDescription =
+    isLoading || isError
+      ? "People in your trusted circle"
+      : count === 0
+        ? "No one in your trusted circle yet"
+        : `${count} ${count === 1 ? "person" : "people"} in your trusted circle`;
+
+  const slotsDescription =
+    isLoading || isError
+      ? `Free plan. ${MAX_CONTACTS} contacts included`
+      : count >= MAX_CONTACTS
+        ? `Free plan. All ${MAX_CONTACTS} slots used`
+        : `Free plan. ${count} of ${MAX_CONTACTS} contacts used`;
+
+  const defaultValues = useMemo(
+    () => ({
+      full_name: user?.full_name ?? "",
+      username: user?.username ?? "",
+      email: user?.email ?? "",
+    }),
+    [user],
+  );
+
   const router = useRouter();
 
   const handleLogout = async () => {
@@ -167,6 +197,12 @@ const Profile = () => {
     router.replace("/login");
 
     console.log("Logout completed");
+  };
+
+  const handleUpdates = (data: UpdateProfileDTO) => {
+    mutate(data, {
+      onSuccess: () => setEditProfile(false),
+    });
   };
 
   return (
@@ -202,11 +238,12 @@ const Profile = () => {
               </Text>
             </View>
 
-            <Link href="/(tab)/contact" asChild>
-              <Pressable className="h-9 w-9 items-center justify-center rounded-full border border-[#dfe3e6]">
-                <Feather name="edit-2" size={16} color="#1e5975" />
-              </Pressable>
-            </Link>
+            <Pressable
+              className="h-9 w-9 items-center justify-center rounded-full border border-[#dfe3e6]"
+              onPress={() => setEditProfile(true)}
+            >
+              <Feather name="edit-2" size={16} color="#1e5975" />
+            </Pressable>
           </View>
 
           {/* SAFETY */}
@@ -217,6 +254,13 @@ const Profile = () => {
 
             <View className="overflow-hidden rounded-2xl border border-[#e1e4e6] bg-white">
               {safetySection.map((s, index) => {
+                const description =
+                  s.text === "Emergency contacts"
+                    ? contactsDescription
+                    : s.text === "Contact slots & plan"
+                      ? slotsDescription
+                      : s.description;
+
                 const row = (
                   <Pressable
                     className={`flex-row items-center p-4 ${
@@ -251,9 +295,9 @@ const Profile = () => {
                         {s.text}
                       </Text>
 
-                      {s.description ? (
+                      {description ? (
                         <Text className="mt-1 font-body text-xs text-text1">
-                          {s.description}
+                          {description}
                         </Text>
                       ) : null}
                     </View>
@@ -822,6 +866,68 @@ const Profile = () => {
                   </Pressable>
                 </Pressable>
               </Pressable>
+            </Modal>
+
+            {/* Edit profile */}
+            <Modal
+              visible={editProfile}
+              transparent
+              animationType="slide"
+              onRequestClose={() => setEditProfile(false)}
+            >
+              <KeyboardAvoidingView
+                behavior="padding"
+                className="flex-1 justify-end bg-black/30"
+              >
+                <View className="rounded-t-3xl bg-white px-5 pb-8 pt-6">
+                  <Text className="font-headerMedium text-base text-text3">
+                    Edit profile
+                  </Text>
+                  <Text className="mb-6 mt-1 font-body text-xs text-text1">
+                    Your username is how other Allerta users add you
+                  </Text>
+
+                  <Form
+                    onSubmit={handleUpdates}
+                    schema={UpdateProfileSchema}
+                    defaultValues={defaultValues}
+                  >
+                    {(methods, submitForm) => (
+                      <View>
+                        <InputField
+                          label="Full name"
+                          name="full_name"
+                          control={methods.control}
+                          error={methods.formState.errors.full_name}
+                        />
+                        <InputField
+                          label="Username"
+                          name="username"
+                          control={methods.control}
+                          error={methods.formState.errors.username}
+                        />
+                        <InputField
+                          label="Email"
+                          name="email"
+                          control={methods.control}
+                          error={methods.formState.errors.email}
+                        />
+
+                        <Button
+                          textClassName="text-white"
+                          className="bg-background mt-2"
+                          spinnerColor="#ffffff"
+                          isLoading={isPending}
+                          onPress={submitForm}
+                          loadingText="Saving..."
+                        >
+                          Save changes
+                        </Button>
+                      </View>
+                    )}
+                  </Form>
+                </View>
+              </KeyboardAvoidingView>
             </Modal>
           </View>
         </View>

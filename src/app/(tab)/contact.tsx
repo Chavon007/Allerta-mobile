@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback, useRef } from "react";
 import {
   View,
   Text,
@@ -6,8 +6,9 @@ import {
   ScrollView,
   Pressable,
   ActivityIndicator,
+  RefreshControl,
 } from "react-native";
-
+import { useFocusEffect } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import ContactCard from "@/components/contactCard";
 import { AntDesign } from "@expo/vector-icons";
@@ -20,7 +21,20 @@ import { AddContactDTO, addContactSchema } from "@/schema/contactSchema";
 const Contact = () => {
   const [modal, setModal] = useState(false);
   const { mutate, isPending } = useAddContactMutation();
-  const { data, isLoading, isError } = useFetchContact();
+  const { data, isLoading, isError, refetch, isRefetching } =
+    useFetchContact();
+
+  // Refetch every time the screen comes back into focus (skip the first one)
+  const isFirstFocus = useRef(true);
+  useFocusEffect(
+    useCallback(() => {
+      if (isFirstFocus.current) {
+        isFirstFocus.current = false;
+        return;
+      }
+      refetch();
+    }, [refetch]),
+  );
 
   const getInitials = (full_name: string) => {
     const names = full_name.trim().split(" ");
@@ -59,6 +73,13 @@ const Contact = () => {
       <ScrollView
         contentContainerClassName="px-5 pt-4 pb-28"
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefetching}
+            onRefresh={refetch}
+            tintColor="#3d7a9a"
+          />
+        }
       >
         <View>
           <Text className="font-headerMedium text-3xl text-text3">
