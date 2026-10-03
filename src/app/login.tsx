@@ -1,4 +1,11 @@
-import { View, Text, Pressable } from "react-native";
+import {
+  View,
+  Text,
+  Pressable,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+} from "react-native";
 import Form from "@/components/Form";
 import { LoginDTO, LoginSchema } from "@/schema/authSchema";
 import InputField from "@/components/inputField";
@@ -21,89 +28,98 @@ const Login = () => {
 
   return (
     <SafeAreaView className="bg-background1 flex-1">
-      <View className="flex-1 px-6 justify-center">
-        <View>
-          {/* Header */}
+      <KeyboardAvoidingView
+        className="flex-1"
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+      >
+        <ScrollView
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          contentContainerClassName="flex-grow justify-center px-6 py-8"
+        >
           <View>
-            <Text className="text-3xl font-header uppercase text-text3 font-bold">
-              Welcome Back
-            </Text>
+            {/* Header */}
+            <View>
+              <Text className="text-3xl font-header uppercase text-text3 font-bold">
+                Welcome Back
+              </Text>
 
-            <Text className="mt-2 font-body text-sm text-text3">
-              Log in to reach your trusted circle.
-            </Text>
-          </View>
+              <Text className="mt-2 font-body text-sm text-text3">
+                Log in to reach your trusted circle.
+              </Text>
+            </View>
 
-          {/* Form */}
-          <Form
-            className="gap-5 mt-8"
-            onSubmit={handleLogin}
-            schema={LoginSchema}
-          >
-            {(methods, submitForm) => (
-              <>
-                <View className="gap-4">
-                  <InputField
-                    label="Email Address"
-                    name="email"
-                    control={methods.control}
-                    keyboardType="email-address"
-                    placeholder="youremail@gmail.com"
-                    error={methods.formState.errors.email}
-                  />
-
-                  <View>
+            {/* Form */}
+            <Form
+              className="gap-5 mt-8"
+              onSubmit={handleLogin}
+              schema={LoginSchema}
+            >
+              {(methods, submitForm) => (
+                <>
+                  <View className="gap-4">
                     <InputField
-                      label="Password"
-                      name="password"
+                      label="Email Address"
+                      name="email"
                       control={methods.control}
-                      secureTextEntry
-                      placeholder="********"
-                      error={methods.formState.errors.password}
+                      keyboardType="email-address"
+                      placeholder="youremail@gmail.com"
+                      error={methods.formState.errors.email}
                     />
 
-                    <Pressable
-                      className="self-end mt-2"
-                      onPress={() => router.push("/")}
-                    >
-                      <Text className="text-xs font-body font-semibold text-text3">
-                        Forgot password?
-                      </Text>
-                    </Pressable>
+                    <View>
+                      <InputField
+                        label="Password"
+                        name="password"
+                        control={methods.control}
+                        secureTextEntry
+                        placeholder="********"
+                        error={methods.formState.errors.password}
+                      />
+
+                      <Pressable
+                        className="self-end mt-2"
+                        onPress={() => router.push("/")}
+                      >
+                        <Text className="text-xs font-body font-semibold text-text3">
+                          Forgot password?
+                        </Text>
+                      </Pressable>
+                    </View>
                   </View>
-                </View>
 
-                <Button
-                  textClassName="text-white"
-                  className="bg-background mt-2"
-                  spinnerColor="#ffffff"
-                  isLoading={isPending}
-                  onPress={submitForm}
-                  loadingText="Logging in..."
-                >
-                  Login
-                </Button>
-              </>
-            )}
-          </Form>
+                  <Button
+                    textClassName="text-white"
+                    className="bg-background mt-2"
+                    spinnerColor="#ffffff"
+                    isLoading={isPending}
+                    onPress={submitForm}
+                    loadingText="Logging in..."
+                  >
+                    Login
+                  </Button>
+                </>
+              )}
+            </Form>
 
-          {/* Create account */}
-          <View className="items-center mt-8">
-            <Text className="text-sm font-body text-text3">
-              Don't have an account?
-            </Text>
-
-            <Pressable
-              className="mt-1"
-              onPress={() => router.push("/create-account")}
-            >
-              <Text className="text-sm font-body font-semibold text-text3 underline">
-                Create an account
+            {/* Create account */}
+            <View className="items-center mt-8">
+              <Text className="text-sm font-body text-text3">
+                Don't have an account?
               </Text>
-            </Pressable>
+
+              <Pressable
+                className="mt-1"
+                onPress={() => router.push("/create-account")}
+              >
+                <Text className="text-sm font-body font-semibold text-text3 underline">
+                  Create an account
+                </Text>
+              </Pressable>
+            </View>
           </View>
-        </View>
-      </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };

@@ -4,13 +4,14 @@ import Button from "@/components/Button";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Link, router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
+
 const Step2 = () => {
   return (
     <SafeAreaView className="bg-background1 flex-1">
-      <View className="bg-background1 h-screen flex flex-col items-center justify-between py-12">
+      <View className="bg-background1 flex-1 flex flex-col items-center justify-between py-12">
         <View className="items-end w-[85%] mx-auto">
           <Link className="" href="/login">
-            <Text className="text-background font-medium text-base  font-body">
+            <Text className="text-background font-medium text-base font-body">
               Skip
             </Text>
           </Link>

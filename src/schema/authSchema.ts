@@ -3,7 +3,7 @@ import { z } from "zod";
 
 export const SignupSchema = z
   .object({
-    full_name: z.string().min(2, "Full name is required"),
+    full_name: z.string().min(5, "Full name must be at least 5 characters"),
     email: z.string().email("Enter a valid email address"),
     username: z
       .string()
@@ -30,5 +30,36 @@ export const LoginSchema = z.object({
   password: z.string().min(1, "Password is required"),
 });
 
+export const UpdateProfileSchema = z.object({
+  full_name: z.string().min(5, "Full name must be at least 5 characters"),
+  email: z.string().email("Use a valid email address"),
+  username: z
+    .string()
+    .min(3, "Username must be at least 3 characters")
+    .regex(
+      /^[a-zA-Z0-9_]+$/,
+      "Username can only contain letters, numbers, and underscores",
+    ),
+});
+
+export const UpdatePasswordSchema = z
+  .object({
+    current_password: z.string().min(1, "Old password is required"),
+    new_password: z
+      .string()
+      .min(8, "Password must be at least 8 characters")
+      .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+      .regex(/[0-9]/, "Password must contain at least one number")
+      .regex(/[^A-Za-z0-9]/, "Password must contain at least one symbol"),
+
+    confirm_new_password: z.string(),
+  })
+  .refine((data) => data.new_password === data.confirm_new_password, {
+    message: "News password does not match confirm password",
+    path: ["confirm_new_password"],
+  });
+
 export type LoginDTO = z.infer<typeof LoginSchema>;
 export type SignupDTO = z.infer<typeof SignupSchema>;
+export type UpdateProfileDTO = z.infer<typeof UpdateProfileSchema>;
+export type UpdatePasswordDTO = z.infer<typeof UpdatePasswordSchema>;

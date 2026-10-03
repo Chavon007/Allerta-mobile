@@ -7,7 +7,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 const Index = () => {
   return (
     <SafeAreaView className="bg-background flex-1">
-      <View className=" h-screen flex flex-col items-center justify-between py-12">
+      <View className="flex-1 flex flex-col items-center justify-between py-12">
         <View className="flex-1 flex flex-col justify-center items-center gap-2 p-4">
           <View className="bg-backgroundLight p-5 rounded-3xl">
             <MaterialCommunityIcons

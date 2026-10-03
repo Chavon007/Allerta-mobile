@@ -8,10 +8,10 @@ import { SafeAreaView } from "react-native-safe-area-context";
 const Step1 = () => {
   return (
     <SafeAreaView className="bg-background1 flex-1">
-      <View className="h-screen flex flex-col items-center justify-between py-12">
+      <View className="flex-1 flex flex-col items-center justify-between py-12">
         <View className="items-end w-[85%] mx-auto">
           <Link className="" href="/login">
-            <Text className="text-background font-medium text-base  font-body">
+            <Text className="text-background font-medium text-base font-body">
               Skip
             </Text>
           </Link>
@@ -29,7 +29,7 @@ const Step1 = () => {
             Stay connected when it matters most.
           </Text>
           <Text className="text-text3 font-body text-base font-medium mt-3">
-            Beacon keeps a small circle of people you trust one tap away.
+            Allerta keeps a small circle of people you trust one tap away.
           </Text>
           <StepIndicator currentStep={1} totalStep={3} />
         </View>
