@@ -14,8 +14,9 @@ import Form from "@/components/Form";
 import Button from "@/components/Button";
 import InputField from "@/components/inputField";
 import { UpdateProfileDTO, UpdateProfileSchema } from "@/schema/authSchema";
-import { useUpdateProfile } from "@/api/auth";
+import { useUpdateProfile, useUpdatePassword } from "@/api/auth";
 import { useFetchContact } from "@/api/emergency";
+import { UpdatePasswordDTO, UpdatePasswordSchema } from "@/schema/authSchema";
 import {
   Feather,
   SimpleLineIcons,
@@ -145,6 +146,8 @@ const accountSection: accountSectionProps[] = [
 const Profile = () => {
   const logout = useAuthStore((state) => state.logout);
   const user = useAuthStore((state) => state.user);
+  const { mutate: passwordMutate, isPending: passwordPending } =
+    useUpdatePassword();
   const { data, isLoading, isError } = useFetchContact();
   const [openPrivacy, setOpenPrivacy] = useState(false);
   const [editProfile, setEditProfile] = useState(false);
@@ -204,11 +207,17 @@ const Profile = () => {
       onSuccess: () => setEditProfile(false),
     });
   };
+  const handleUpdatePassword = (data: UpdatePasswordDTO) => {
+    passwordMutate(data, {
+      onSuccess: () => setActiveModal(null),
+    });
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-background1">
       <ScrollView
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
         contentContainerClassName="px-5 pt-4 pb-28"
       >
         <View>
@@ -740,7 +749,7 @@ const Profile = () => {
             </Modal>
 
             {/* CHANGE PASSWORD */}
-            {/*
+
             <Modal
               visible={activeModal === "password"}
               transparent
@@ -756,50 +765,60 @@ const Profile = () => {
                     Change password
                   </Text>
 
-                  <Form className="" onSubmit={} schema={}>
-                    {(methods, submitForm) => (
-                      <View>
-                        <InputField
-                          label="Current password"
-                          name="current_password"
-                          secureTextEntry
-                          control={methods.control}
-                          error={methods.formState.errors.current_password}
-                        />
+                  <ScrollView
+                    keyboardShouldPersistTaps="handled"
+                    showsVerticalScrollIndicator={false}
+                  >
+                    <Form
+                      className=""
+                      onSubmit={handleUpdatePassword}
+                      schema={UpdatePasswordSchema}
+                    >
+                      {(methods, submitForm) => (
+                        <View>
+                          <InputField
+                            label="Current password"
+                            name="current_password"
+                            secureTextEntry
+                            control={methods.control}
+                            error={methods.formState.errors.current_password}
+                          />
 
-                        <InputField
-                          secureTextEntry
-                          label="New password"
-                          name="new_password"
-                          control={methods.control}
-                          error={methods.formState.errors.new_password}
-                        />
+                          <InputField
+                            secureTextEntry
+                            label="New password"
+                            name="new_password"
+                            control={methods.control}
+                            error={methods.formState.errors.new_password}
+                          />
 
-                        <InputField
-                          secureTextEntry
-                          label="Confirm new password"
-                          name="confirm_new_password"
-                          control={methods.control}
-                          error={methods.formState.errors.confirm_new_password}
-                        />
+                          <InputField
+                            secureTextEntry
+                            label="Confirm new password"
+                            name="confirm_new_password"
+                            control={methods.control}
+                            error={
+                              methods.formState.errors.confirm_new_password
+                            }
+                          />
 
-                        <Button
-                          textClassName="text-white"
-                          className="bg-background mt-2"
-                          spinnerColor="#ffffff"
-                          isLoading={}
-                          onPress={}
-                          loadingText="Updating..."
-                        >
-                          Update password
-                        </Button>
-                      </View>
-                    )}
-                  </Form>
+                          <Button
+                            textClassName="text-white"
+                            className="bg-background mt-2"
+                            spinnerColor="#ffffff"
+                            isLoading={passwordPending}
+                            onPress={submitForm}
+                            loadingText="Updating..."
+                          >
+                            Update password
+                          </Button>
+                        </View>
+                      )}
+                    </Form>
+                  </ScrollView>
                 </View>
               </KeyboardAvoidingView>
             </Modal>
-            */}
 
             {/* YOUR PRIVACY */}
             <Modal
@@ -875,59 +894,69 @@ const Profile = () => {
               animationType="slide"
               onRequestClose={() => setEditProfile(false)}
             >
-              <KeyboardAvoidingView
-                behavior="padding"
+              <Pressable
                 className="flex-1 justify-end bg-black/30"
+                onPress={() => setEditProfile(false)}
               >
-                <View className="rounded-t-3xl bg-white px-5 pb-8 pt-6">
-                  <Text className="font-headerMedium text-base text-text3">
-                    Edit profile
-                  </Text>
-                  <Text className="mb-6 mt-1 font-body text-xs text-text1">
-                    Your username is how other Allerta users add you
-                  </Text>
+                <KeyboardAvoidingView
+                  behavior="padding"
+                  className="flex-1 justify-end bg-black/30"
+                >
+                  <View className="rounded-t-3xl bg-white px-5 pb-8 pt-6">
+                    <Text className="font-headerMedium text-base text-text3">
+                      Edit profile
+                    </Text>
+                    <Text className="mb-6 mt-1 font-body text-xs text-text1">
+                      Your username is how other Allerta users add you
+                    </Text>
 
-                  <Form
-                    onSubmit={handleUpdates}
-                    schema={UpdateProfileSchema}
-                    defaultValues={defaultValues}
-                  >
-                    {(methods, submitForm) => (
-                      <View>
-                        <InputField
-                          label="Full name"
-                          name="full_name"
-                          control={methods.control}
-                          error={methods.formState.errors.full_name}
-                        />
-                        <InputField
-                          label="Username"
-                          name="username"
-                          control={methods.control}
-                          error={methods.formState.errors.username}
-                        />
-                        <InputField
-                          label="Email"
-                          name="email"
-                          control={methods.control}
-                          error={methods.formState.errors.email}
-                        />
+                    <ScrollView
+                      keyboardShouldPersistTaps="handled"
+                      showsVerticalScrollIndicator={false}
+                    >
+                      <Form
+                        onSubmit={handleUpdates}
+                        schema={UpdateProfileSchema}
+                        defaultValues={defaultValues}
+                      >
+                        {(methods, submitForm) => (
+                          <View>
+                            <InputField
+                              label="Full name"
+                              name="full_name"
+                              control={methods.control}
+                              error={methods.formState.errors.full_name}
+                            />
+                            <InputField
+                              label="Username"
+                              name="username"
+                              control={methods.control}
+                              error={methods.formState.errors.username}
+                            />
+                            <InputField
+                              label="Email"
+                              name="email"
+                              control={methods.control}
+                              error={methods.formState.errors.email}
+                            />
 
-                        <Button
-                          textClassName="text-white"
-                          className="bg-background mt-2"
-                          spinnerColor="#ffffff"
-                          isLoading={isPending}
-                          onPress={submitForm}
-                          loadingText="Saving..."
-                        >
-                          Save changes
-                        </Button>
-                      </View>
-                    )}
-                  </Form>
-                </View>
-              </KeyboardAvoidingView>
+                            <Button
+                              textClassName="text-white"
+                              className="bg-background mt-2"
+                              spinnerColor="#ffffff"
+                              isLoading={isPending}
+                              onPress={submitForm}
+                              loadingText="Saving..."
+                            >
+                              Save changes
+                            </Button>
+                          </View>
+                        )}
+                      </Form>
+                    </ScrollView>
+                  </View>
+                </KeyboardAvoidingView>
+              </Pressable>
             </Modal>
           </View>
         </View>

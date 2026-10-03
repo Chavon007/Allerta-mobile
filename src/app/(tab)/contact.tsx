@@ -73,6 +73,7 @@ const Contact = () => {
       <ScrollView
         contentContainerClassName="px-5 pt-4 pb-28"
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
         refreshControl={
           <RefreshControl
             refreshing={isRefetching}
@@ -147,65 +148,70 @@ const Contact = () => {
               Add contact through their username or email
             </Text>
 
-            <View className="mt-6 gap-3">
-              <Form<AddContactDTO>
-                className=""
-                onSubmit={() => {}}
-                schema={addContactSchema}
-              >
-                {(methods) => {
-                  const handleAddContact = (data: AddContactDTO) => {
-                    mutate(data, {
-                      onSuccess: () => {
-                        setModal(false);
-                      },
-                      onError: (error: any) => {
-                        const fieldError =
-                          error?.response?.data?.errors?.identifier?.[0];
+            <ScrollView
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
+            >
+              <View className="mt-6 gap-3">
+                <Form<AddContactDTO>
+                  className=""
+                  onSubmit={() => {}}
+                  schema={addContactSchema}
+                >
+                  {(methods) => {
+                    const handleAddContact = (data: AddContactDTO) => {
+                      mutate(data, {
+                        onSuccess: () => {
+                          setModal(false);
+                        },
+                        onError: (error: any) => {
+                          const fieldError =
+                            error?.response?.data?.errors?.identifier?.[0];
 
-                        if (fieldError) {
-                          methods.setError("identifier", {
-                            message: fieldError,
-                          });
-                        }
-                      },
-                    });
-                  };
+                          if (fieldError) {
+                            methods.setError("identifier", {
+                              message: fieldError,
+                            });
+                          }
+                        },
+                      });
+                    };
 
-                  return (
-                    <>
-                      <View>
-                        <InputField
-                          label="Username or Email"
-                          name="identifier"
-                          control={methods.control}
-                          keyboardType="default"
-                          placeholder="davidJohn or test@gmail.com"
-                          error={methods.formState.errors.identifier}
-                        />
+                    return (
+                      <>
+                        <View>
+                          <InputField
+                            label="Username or Email"
+                            name="identifier"
+                            control={methods.control}
+                            keyboardType="default"
+                            placeholder="davidJohn or test@gmail.com"
+                            error={methods.formState.errors.identifier}
+                          />
 
-                        <Button
-                          textClassName="text-white"
-                          className="bg-background mt-2"
-                          spinnerColor="#ffffff"
-                          isLoading={isPending}
-                          onPress={methods.handleSubmit(handleAddContact)}
-                          loadingText="Adding..."
-                        >
-                          Add contact
-                        </Button>
-                      </View>
+                          <Button
+                            textClassName="text-white"
+                            className="bg-background mt-2"
+                            spinnerColor="#ffffff"
+                            isLoading={isPending}
+                            onPress={methods.handleSubmit(handleAddContact)}
+                            loadingText="Adding..."
+                          >
+                            Add contact
+                          </Button>
+                        </View>
 
-                      <Pressable onPress={() => setModal(false)}>
-                        <Text className="font-bodyMedium text-center mt-6 text-xm text-backgroundLight font-medium">
-                          Back
-                        </Text>
-                      </Pressable>
-                    </>
-                  );
-                }}
-              </Form>
-            </View>
+                        <Pressable onPress={() => setModal(false)}>
+                          <Text className="font-bodyMedium text-center mt-6 text-xm text-backgroundLight font-medium">
+                            Back
+                          </Text>
+                        </Pressable>
+                      </>
+                    );
+                  }}
+                </Form>
+              </View>
+            </ScrollView>
           </View>
         </KeyboardAvoidingView>
       )}

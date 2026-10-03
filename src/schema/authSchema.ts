@@ -42,6 +42,24 @@ export const UpdateProfileSchema = z.object({
     ),
 });
 
+export const UpdatePasswordSchema = z
+  .object({
+    current_password: z.string().min(1, "Old password is required"),
+    new_password: z
+      .string()
+      .min(8, "Password must be at least 8 characters")
+      .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+      .regex(/[0-9]/, "Password must contain at least one number")
+      .regex(/[^A-Za-z0-9]/, "Password must contain at least one symbol"),
+
+    confirm_new_password: z.string(),
+  })
+  .refine((data) => data.new_password === data.confirm_new_password, {
+    message: "News password does not match confirm password",
+    path: ["confirm_new_password"],
+  });
+
 export type LoginDTO = z.infer<typeof LoginSchema>;
 export type SignupDTO = z.infer<typeof SignupSchema>;
 export type UpdateProfileDTO = z.infer<typeof UpdateProfileSchema>;
+export type UpdatePasswordDTO = z.infer<typeof UpdatePasswordSchema>;
