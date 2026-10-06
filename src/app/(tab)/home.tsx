@@ -46,7 +46,7 @@ const items = [
     icon: "bell-ring-outline",
     iconLibrary: "MaterialCommunityIcons",
     iconColor: "#3d7a9a",
-    href: "/",
+    href: "/recipient",
   },
 ];
 
