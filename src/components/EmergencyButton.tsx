@@ -1,8 +1,9 @@
 import React, { useEffect, useRef } from "react";
 import { View, Text, Pressable, Animated, Easing } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-
+import { useRouter } from "expo-router";
 const EmergencyButton = () => {
+  const router = useRouter();
   const pulseAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -12,7 +13,7 @@ const EmergencyButton = () => {
         duration: 1500,
         easing: Easing.out(Easing.ease),
         useNativeDriver: true,
-      })
+      }),
     );
     pulse.start();
 
@@ -42,8 +43,15 @@ const EmergencyButton = () => {
         />
 
         {/* Static solid button */}
-        <Pressable className="bg-red-600 w-[180px] h-[180px] rounded-full justify-center items-center active:opacity-80">
-          <MaterialCommunityIcons name="shield-alert-outline" size={32} color="white" />
+        <Pressable
+          className="bg-red-600 w-[180px] h-[180px] rounded-full justify-center items-center active:opacity-80"
+          onPress={() => router.replace("/countdown")}
+        >
+          <MaterialCommunityIcons
+            name="shield-alert-outline"
+            size={32}
+            color="white"
+          />
           <Text className="text-white font-header text-xl font-bold mt-2">
             EMERGENCY
           </Text>
