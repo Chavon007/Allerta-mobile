@@ -8,6 +8,7 @@ export default function Countdown() {
   const [count, setCount] = useState(5);
   const router = useRouter();
   const pulseAnim = useRef(new Animated.Value(0)).current;
+  const hasNavigated = useRef(false);
 
   useEffect(() => {
     const pulse = Animated.loop(
@@ -32,9 +33,16 @@ export default function Countdown() {
     outputRange: [0.4, 0],
   });
 
+  const goToAlert = () => {
+    if (hasNavigated.current) return;
+    hasNavigated.current = true;
+    router.replace("/alertActive");
+  };
+
+  // Only ONE countdown effect
   useEffect(() => {
     if (count === 0) {
-      router.replace("/");
+      goToAlert();
       return;
     }
     const timer = setTimeout(() => setCount((c) => c - 1), 1000);
@@ -42,7 +50,7 @@ export default function Countdown() {
   }, [count]);
 
   return (
-    <SafeAreaView className="flex-1 bg-red-100">
+    <SafeAreaView className="flex-1 bg-emergencyLight">
       <View className="flex-1 w-[90%] mx-auto justify-between py-6">
         {/* Top text */}
         <View className="items-center gap-3 mt-10">
@@ -52,7 +60,6 @@ export default function Countdown() {
               size={13}
               color="#dc2626"
             />
-
             <Text className="text-red-600 text-base font-bodyMedium">
               Activating emergency
             </Text>
@@ -88,7 +95,10 @@ export default function Countdown() {
         {/* Buttons */}
         <View className="gap-3">
           <Pressable
-            onPress={() => router.back()}
+            onPress={() => {
+              hasNavigated.current = true; // stop the timer from firing after cancel
+              router.replace("/");
+            }}
             className="flex-row items-center justify-center gap-2 bg-white rounded-2xl py-4 active:opacity-80"
           >
             <Ionicons name="close" size={16} color="#404a54" />
@@ -96,7 +106,7 @@ export default function Countdown() {
           </Pressable>
 
           <Pressable
-            onPress={() => router.replace("/")}
+            onPress={goToAlert}
             className="items-center justify-center bg-red-600 rounded-2xl py-4 active:opacity-80 shadow-lg shadow-red-400"
           >
             <Text className="text-text font-button text-sm">Alert now</Text>

@@ -15,6 +15,8 @@ module.exports = {
         text1: "#678fa2",
         background1: "#f5f8fb",
         text3: "#404a54",
+        emergency: "#D91E2A",
+        emergencyLight: "#FCE8E8",
       },
       fontFamily: {
         header: ["Manrope_700Bold"],

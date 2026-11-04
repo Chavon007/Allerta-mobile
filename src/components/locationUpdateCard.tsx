@@ -29,13 +29,22 @@ function LocationUpdateCard({ address, contact, time }: locationCardProp) {
     },
   ];
   return (
-    <View>
-      {rows.map((r) => (
-        <View key={r.label}>
-          <Feather name={r.icon} size={24} color="black" />
-          <View>
-            <Text>{r.label}</Text>
-            <Text>{r.value}</Text>
+    <View className="rounded-2xl bg-white px-4">
+      {rows.map((r, i) => (
+        <View
+          key={r.label}
+          className={`flex-row items-center gap-3 py-3 ${
+            i !== rows.length - 1 ? "border-b border-gray-100" : ""
+          }`}
+        >
+          <Feather name={r.icon} size={16} color="#3d7a9a" />
+          <View className="flex-1">
+            <Text className="font-body text-[10px] uppercase tracking-wide text-text1">
+              {r.label}
+            </Text>
+            <Text className="font-bodyMedium text-sm text-black/70">
+              {r.value}
+            </Text>
           </View>
         </View>
       ))}
