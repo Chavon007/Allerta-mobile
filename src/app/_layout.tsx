@@ -40,7 +40,27 @@ export default function RootLayout() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Stack screenOptions={{ headerShown: false }} />
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          animation: "fade",
+          animationDuration: 200,
+
+          contentStyle: { backgroundColor: "#f5f8fb" },
+        }}
+      >
+        <Stack.Screen
+          name="countdown"
+          options={{ contentStyle: { backgroundColor: "#FCE8E8" } }}
+        />
+        <Stack.Screen
+          name="alertActive"
+          options={{
+            contentStyle: { backgroundColor: "#FCE8E8" },
+            gestureEnabled: false,
+          }}
+        />
+      </Stack>
       <Toast />
     </QueryClientProvider>
   );
