@@ -32,6 +32,12 @@
           "imageWidth": 76
         }
       ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Allerta uses your location to share it with your trusted contacts during an emergency."
+        }
+      ],
       "expo-secure-store",
       "expo-font",
       "expo-image",

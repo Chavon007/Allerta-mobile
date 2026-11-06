@@ -1,4 +1,4 @@
-import { View, Text, ScrollView } from "react-native";
+import { View, Text, ScrollView, ActivityIndicator } from "react-native";
 import {
   SafeAreaView,
   useSafeAreaInsets,
@@ -13,11 +13,17 @@ import { seedAlert } from "@/data/seedAlert";
 import { BackHandler } from "react-native";
 import { useFocusEffect } from "expo-router";
 import { useCallback } from "react";
-
+import { useEndEmergency } from "@/api/emergency";
+import { useEmergencyState } from "@/store/emergencyStore";
+import { useWatchLocation } from "@/hooks/useLocation";
+import { useSendLocation } from "@/api/emergency";
 export default function AlertActive() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-
+  const { mutate, isPending } = useEndEmergency();
+  const { mutate: sendLocation } = useSendLocation();
+  const emergencyId = useEmergencyState((s) => s.emergencyId);
+  const setEmergencyId = useEmergencyState((s) => s.setEmergencyId);
   useFocusEffect(
     useCallback(() => {
       const sub = BackHandler.addEventListener("hardwareBackPress", () => true);
@@ -28,6 +34,18 @@ export default function AlertActive() {
     (c) => c.status !== "Unnotified",
   ).length;
 
+  useWatchLocation(emergencyId !== null, (coords) => {
+    if (emergencyId !== null) sendLocation({ id: emergencyId, ...coords });
+  });
+  const onEnd = () => {
+    if (emergencyId === null || isPending) return;
+    mutate(emergencyId, {
+      onSuccess: () => {
+        setEmergencyId(null);
+        router.replace("/");
+      },
+    });
+  };
   return (
     // Background lives on SafeAreaView so the status bar area is pink too
     <SafeAreaView className="flex-1 bg-emergencyLight" edges={["top"]}>
@@ -72,9 +90,17 @@ export default function AlertActive() {
         <Button
           className="bg-red-500"
           textClassName="text-white"
-          onPress={() => router.replace("/")}
+          onPress={onEnd}
+          disabled={isPending}
         >
-          END EMERGENCY
+          {isPending ? (
+            <Text>
+              <ActivityIndicator />
+              ENDING...
+            </Text>
+          ) : (
+            "END EMERGENCY"
+          )}
         </Button>
         <Text className="mt-2 text-center font-body text-sm text-text1">
           Ending stops live location sharing immediately

@@ -3,13 +3,17 @@ import React, { useEffect, useState, useRef } from "react";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-
+import { useEmergencyState } from "@/store/emergencyStore";
+import { useStartEmergency } from "@/api/emergency";
+import { getCurrentCoords } from "@/hooks/useLocation";
+import Toast from "react-native-toast-message";
 export default function Countdown() {
   const [count, setCount] = useState(5);
   const router = useRouter();
   const pulseAnim = useRef(new Animated.Value(0)).current;
   const hasNavigated = useRef(false);
-
+  const { mutate, isPending } = useStartEmergency();
+  const setEmergencyId = useEmergencyState((s) => s.setEmergencyId);
   useEffect(() => {
     const pulse = Animated.loop(
       Animated.timing(pulseAnim, {
@@ -33,10 +37,28 @@ export default function Countdown() {
     outputRange: [0.4, 0],
   });
 
-  const goToAlert = () => {
+  const goToAlert = async () => {
     if (hasNavigated.current) return;
     hasNavigated.current = true;
-    router.replace("/alertActive");
+
+    try {
+      const coords = await getCurrentCoords();
+      mutate(coords, {
+        onSuccess: (emergency) => {
+          setEmergencyId(emergency.id);
+          router.replace("/alertActive");
+        },
+        onError: () => {
+          hasNavigated.current = false;
+        },
+      });
+    } catch {
+      hasNavigated.current = false;
+      Toast.show({
+        type: "error",
+        text1: "Turn on location to start an emergency",
+      });
+    }
   };
 
   // Only ONE countdown effect
