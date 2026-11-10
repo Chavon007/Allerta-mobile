@@ -19,7 +19,9 @@ import {
 } from "@/api/emergency";
 import { useEmergencyState } from "@/store/emergencyStore";
 import { useWatchLocation } from "@/hooks/useLocation";
-
+import { Coords, getCurrentCoords } from "@/hooks/useLocation";
+import { useLocalAddress } from "@/hooks/useLocalAddress";
+import { useEffect, useState } from "react";
 export default function AlertActive() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -30,12 +32,7 @@ export default function AlertActive() {
   const { mutate: end, isPending } = useEndEmergency();
   const { mutate: sendLocation } = useSendLocation();
   const { data: emergency, error, status } = useGetEmergency(emergencyId, 5000);
-  console.log("emergency query", {
-    emergencyId,
-    status,
-    http: (error as any)?.response?.status,
-    msg: (error as any)?.message,
-  });
+  const [localCoords, setLocalCoords] = useState<Coords | null>(null);
   const { data: contacts = [] } = useFetchContact();
 
   useFocusEffect(
@@ -51,8 +48,6 @@ export default function AlertActive() {
 
   const hasLocation =
     emergency?.latest_latitude != null && emergency?.latest_longitude != null;
-
-  const address = emergency?.latest_address ?? "Finding your address...";
 
   const startedAt = emergency
     ? new Date(emergency.started_at).toLocaleTimeString([], {
@@ -79,6 +74,23 @@ export default function AlertActive() {
     });
   };
 
+  useEffect(() => {
+    getCurrentCoords()
+      .then(setLocalCoords)
+      .catch(() => {});
+  }, []);
+
+  const coords: Coords | null = hasLocation
+    ? {
+        latitude: Number(emergency!.latest_latitude),
+        longitude: Number(emergency!.latest_longitude),
+      }
+    : localCoords;
+
+  const localAddress = useLocalAddress(coords);
+
+  const address =
+    emergency?.latest_address ?? localAddress ?? "Finding your address...";
   return (
     <SafeAreaView className="flex-1 bg-emergencyLight" edges={["top"]}>
       <StatusBar style="dark" />
@@ -104,14 +116,8 @@ export default function AlertActive() {
           </Text>
         </View>
 
-        {hasLocation ? (
-          <LocationMap
-            address={address}
-            coords={{
-              latitude: emergency!.latest_latitude,
-              longitude: emergency!.latest_longitude,
-            }}
-          />
+        {coords ? (
+          <LocationMap address={address} coords={coords} />
         ) : (
           <View className="h-64 items-center justify-center rounded-2xl bg-white">
             <ActivityIndicator />

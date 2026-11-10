@@ -7,6 +7,7 @@ import { useEmergencyState } from "@/store/emergencyStore";
 import { useStartEmergency } from "@/api/emergency";
 import { getCurrentCoords } from "@/hooks/useLocation";
 import Toast from "react-native-toast-message";
+import { useQueryClient } from "@tanstack/react-query";
 export default function Countdown() {
   const [count, setCount] = useState(5);
   const router = useRouter();
@@ -14,6 +15,8 @@ export default function Countdown() {
   const hasNavigated = useRef(false);
   const { mutateAsync: startEmergency } = useStartEmergency();
   const setEmergencyId = useEmergencyState((s) => s.setEmergencyId);
+  const queryClient = useQueryClient();
+
   useEffect(() => {
     const pulse = Animated.loop(
       Animated.timing(pulseAnim, {
@@ -44,7 +47,10 @@ export default function Countdown() {
     router.replace("/alertActive");
     getCurrentCoords()
       .then((coords) => startEmergency(coords))
-      .then((emergency) => setEmergencyId(emergency.id))
+      .then((emergency) => {
+        queryClient.setQueryData(["emergency", emergency.id], emergency);
+        setEmergencyId(emergency.id);
+      })
       .catch((e) => {
         setEmergencyId(null);
         router.replace("/");
