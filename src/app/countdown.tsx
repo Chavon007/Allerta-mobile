@@ -12,7 +12,7 @@ export default function Countdown() {
   const router = useRouter();
   const pulseAnim = useRef(new Animated.Value(0)).current;
   const hasNavigated = useRef(false);
-  const { mutate, isPending } = useStartEmergency();
+  const { mutateAsync: startEmergency } = useStartEmergency();
   const setEmergencyId = useEmergencyState((s) => s.setEmergencyId);
   useEffect(() => {
     const pulse = Animated.loop(
@@ -37,28 +37,24 @@ export default function Countdown() {
     outputRange: [0.4, 0],
   });
 
-  const goToAlert = async () => {
+  const goToAlert = () => {
     if (hasNavigated.current) return;
     hasNavigated.current = true;
 
-    try {
-      const coords = await getCurrentCoords();
-      mutate(coords, {
-        onSuccess: (emergency) => {
-          setEmergencyId(emergency.id);
-          router.replace("/alertActive");
-        },
-        onError: () => {
-          hasNavigated.current = false;
-        },
+    router.replace("/alertActive");
+    getCurrentCoords()
+      .then((coords) => startEmergency(coords))
+      .then((emergency) => setEmergencyId(emergency.id))
+      .catch((e) => {
+        setEmergencyId(null);
+        router.replace("/");
+        if (e?.message === "Location permission denied") {
+          Toast.show({
+            type: "error",
+            text1: "Turn on location to start an emergency",
+          });
+        }
       });
-    } catch {
-      hasNavigated.current = false;
-      Toast.show({
-        type: "error",
-        text1: "Turn on location to start an emergency",
-      });
-    }
   };
 
   // Only ONE countdown effect

@@ -1,4 +1,5 @@
 import { Stack } from "expo-router";
+import { startLocationWarmup } from "@/hooks/useLocation";
 import "./global.css";
 import { useEffect, useState } from "react";
 import { useFonts } from "expo-font";
@@ -36,7 +37,14 @@ export default function RootLayout() {
     if (ready) SplashScreen.hideAsync();
   }, [ready]);
 
-  if (!ready) return null;
+  useEffect(() => {
+    if (!ready) return;
+
+    const pending = startLocationWarmup();
+    return () => {
+      pending.then((sub) => sub?.remove());
+    };
+  }, [ready]);
 
   return (
     <QueryClientProvider client={queryClient}>

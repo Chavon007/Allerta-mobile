@@ -4,11 +4,14 @@ import Feather from "@expo/vector-icons/Feather";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import React from "react";
+
+
 interface locationCardProp {
   address: string;
   contact: number;
   time: string;
 }
+
 function LocationUpdateCard({ address, contact, time }: locationCardProp) {
   const rows: {
     icon: React.ComponentProps<typeof Feather>["name"];
@@ -16,16 +19,12 @@ function LocationUpdateCard({ address, contact, time }: locationCardProp) {
     value: string;
   }[] = [
     { icon: "map-pin", label: "Current address", value: address },
-    {
-      icon: "radio",
-      label: "Location status",
-      value: "Live location updating",
-    },
+    { icon: "radio", label: "Location status", value: "Live location updating" },
     { icon: "clock", label: "Last update", value: time },
     {
       icon: "bell",
       label: "Notifications",
-      value: `${contact} contacts notified`,
+      value: `${contact} ${contact === 1 ? "contact" : "contacts"} notified`,
     },
   ];
   return (
