@@ -3,12 +3,19 @@ import React, { useEffect, useState, useRef } from "react";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-
+import { useEmergencyState } from "@/store/emergencyStore";
+import { useStartEmergency } from "@/api/emergency";
+import { getCurrentCoords } from "@/hooks/useLocation";
+import Toast from "react-native-toast-message";
+import { useQueryClient } from "@tanstack/react-query";
 export default function Countdown() {
   const [count, setCount] = useState(5);
   const router = useRouter();
   const pulseAnim = useRef(new Animated.Value(0)).current;
   const hasNavigated = useRef(false);
+  const { mutateAsync: startEmergency } = useStartEmergency();
+  const setEmergencyId = useEmergencyState((s) => s.setEmergencyId);
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     const pulse = Animated.loop(
@@ -36,7 +43,24 @@ export default function Countdown() {
   const goToAlert = () => {
     if (hasNavigated.current) return;
     hasNavigated.current = true;
+
     router.replace("/alertActive");
+    getCurrentCoords()
+      .then((coords) => startEmergency(coords))
+      .then((emergency) => {
+        queryClient.setQueryData(["emergency", emergency.id], emergency);
+        setEmergencyId(emergency.id);
+      })
+      .catch((e) => {
+        setEmergencyId(null);
+        router.replace("/");
+        if (e?.message === "Location permission denied") {
+          Toast.show({
+            type: "error",
+            text1: "Turn on location to start an emergency",
+          });
+        }
+      });
   };
 
   // Only ONE countdown effect
