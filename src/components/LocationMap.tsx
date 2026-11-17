@@ -3,7 +3,7 @@ import { View, Text, Image, LayoutChangeEvent } from "react-native";
 
 type Props = {
   coords: { latitude: number; longitude: number };
-  address: string;
+  address: string ;
 };
 
 const KEY = process.env.EXPO_PUBLIC_GEOAPIFY_KEY;

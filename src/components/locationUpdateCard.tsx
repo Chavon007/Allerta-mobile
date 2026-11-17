@@ -5,21 +5,32 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import React from "react";
 
-
 interface locationCardProp {
   address: string;
-  contact: number;
+  contact?: number;
   time: string;
+  full_name?: string;
+  username?: string;
 }
 
-function LocationUpdateCard({ address, contact, time }: locationCardProp) {
+function LocationUpdateCard({
+  address,
+  contact,
+  time,
+  username,
+  full_name,
+}: locationCardProp) {
   const rows: {
     icon: React.ComponentProps<typeof Feather>["name"];
     label: string;
     value: string;
   }[] = [
     { icon: "map-pin", label: "Current address", value: address },
-    { icon: "radio", label: "Location status", value: "Live location updating" },
+    {
+      icon: "radio",
+      label: "Location status",
+      value: "Live location updating",
+    },
     { icon: "clock", label: "Last update", value: time },
     {
       icon: "bell",
@@ -27,8 +38,24 @@ function LocationUpdateCard({ address, contact, time }: locationCardProp) {
       value: `${contact} ${contact === 1 ? "contact" : "contacts"} notified`,
     },
   ];
+
+  const initial = (full_name ?? "")
+    .trim()
+    .split(" ")
+    .slice(0, 2)
+    .map((w) => w[0])
+    .join("")
+    .toUpperCase();
   return (
     <View className="rounded-2xl bg-white px-4">
+      <View>
+        <Text>{initial}</Text>
+        <View>
+          <Text>{full_name}</Text>
+          <Text>{username}</Text>
+        </View>
+        <Text>LIVE</Text>
+      </View>
       {rows.map((r, i) => (
         <View
           key={r.label}

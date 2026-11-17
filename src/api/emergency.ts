@@ -14,6 +14,9 @@ import apiClient from "@/service/api";
 import Toast from "react-native-toast-message";
 import { EmergencyContact } from "@/types/Emergency";
 import { EmergencyDTO, emergencySchema } from "@/schema/emergencySchema";
+export interface ReceivedEmergency extends Emergency {
+  user: { id: number; full_name: string; username?: string };
+}
 type sendLocationVars = EmergencyDTO & { id: number };
 
 const addContact = async (data: AddContactDTO) => {
@@ -66,6 +69,23 @@ const history = async (id: number): Promise<EmergencyLocation[]> => {
 
   return response.data;
 };
+
+const recieveEmergency = async (): Promise<ReceivedEmergency[]> => {
+  const response = await apiClient.get("/emergency/received");
+  return response.data;
+};
+const respondEmergency = async ({
+  id,
+}: {
+  id: number;
+  name: string;
+}): Promise<Emergency> => {
+  const response = await apiClient.post(`/emergency/${id}/respond`, {
+    status: "on_my_way",
+  });
+  return response.data;
+};
+
 export const useAddContactMutation = () => {
   const queryClient = useQueryClient();
 
@@ -88,6 +108,29 @@ export const useAddContactMutation = () => {
   });
 };
 
+export const useRespondEmergency = () => {
+  return useMutation({
+    mutationFn: respondEmergency,
+    onSuccess: (_data, { name }) => {
+      Toast.show({
+        type: "success",
+        text1: `${name} has been informed you are on your way`,
+      });
+    },
+    onError: (error: any) => {
+      Toast.show({
+        type: "error",
+        text1: error?.response?.data?.message || "Something went wrong",
+      });
+    },
+  });
+};
+export const useRecieveEmergency = () => {
+  return useQuery({
+    queryKey: ["receive-emeregency"],
+    queryFn: recieveEmergency,
+  });
+};
 export const useFetchContact = () => {
   return useQuery({
     queryKey: ["fetch-contact"],
