@@ -1,4 +1,5 @@
-import { View, Text, Pressable } from "react-native";
+
+import { View, Text, Pressable, ActivityIndicator } from "react-native";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { Link, useRouter, useLocalSearchParams } from "expo-router";
 import Feather from "@expo/vector-icons/Feather";
@@ -10,7 +11,7 @@ const Recipient = () => {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id?: string }>();
   const name = useAuthStore((n) => n.user?.full_name);
-  const { data: list = [] } = useRecieveEmergency();
+  const { data: list = [], isLoading } = useRecieveEmergency();
 
   const firstName = name?.trim().split(" ")[0];
 
@@ -33,7 +34,11 @@ const Recipient = () => {
           Connected contact · {firstName}'s phone
         </Text>
 
-        {emergency ? (
+        {isLoading ? (
+          <View className="items-center justify-center">
+            <ActivityIndicator size="large" color="#3d7a9a" />
+          </View>
+        ) : emergency ? (
           <Pressable onPress={openAlert}>
             <View className="bg-background1 w-[90%] mx-auto rounded-3xl p-2">
               <View className="gap-3">
