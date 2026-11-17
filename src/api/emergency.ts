@@ -4,12 +4,7 @@ import {
   EmergencyLocation,
 } from "@/types/Emergency";
 import { AddContactDTO } from "@/schema/contactSchema";
-import {
-  QueryClient,
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import apiClient from "@/service/api";
 import Toast from "react-native-toast-message";
 import { EmergencyContact } from "@/types/Emergency";
@@ -129,6 +124,7 @@ export const useRecieveEmergency = () => {
   return useQuery({
     queryKey: ["receive-emeregency"],
     queryFn: recieveEmergency,
+    refetchInterval: 5000,
   });
 };
 export const useFetchContact = () => {
