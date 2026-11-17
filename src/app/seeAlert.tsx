@@ -2,7 +2,10 @@ import { View, Text, ScrollView, ActivityIndicator } from "react-native";
 import React from "react";
 import Toast from "react-native-toast-message";
 import AntDesign from "@expo/vector-icons/AntDesign";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import Button from "@/components/Button";
 import { Linking } from "react-native";
@@ -114,9 +117,9 @@ export default function seeAlert() {
           username={received?.user?.username}
         />
 
-        <View className="gap-3">
+        <View className=" gap-2 flex-row justify-between">
           <Button
-            className="bg-white"
+            className="bg-white  w-[170px]"
             textClassName="text-text3"
             onPress={openMaps}
             disabled={!coords}
@@ -130,7 +133,7 @@ export default function seeAlert() {
           </Button>
 
           <Button
-            className="bg-white"
+            className="bg-white w-[150px]"
             textClassName="text-text3"
             onPress={copyCoords}
             disabled={!coords}
@@ -144,49 +147,47 @@ export default function seeAlert() {
           </Button>
         </View>
 
-        <Text className="text-center font-body text-xs text-text1">
+        <View>
+          {!notified ? (
+            <Button
+              className="bg-green-600"
+              textClassName="text-white"
+              onPress={onSubmit}
+              disabled={isPending || emergencyId === null}
+            >
+              {isPending ? (
+                <View className="flex-row items-center gap-2">
+                  <ActivityIndicator color="#fff" />
+                  <Text className="text-white">SENDING...</Text>
+                </View>
+              ) : (
+                <View className="flex-row items-center gap-2">
+                  <Ionicons
+                    name="notifications-outline"
+                    size={20}
+                    color="#fff"
+                  />
+                  <Text className="font-button text-base text-white">
+                    I'M ON MY WAY
+                  </Text>
+                </View>
+              )}
+            </Button>
+          ) : (
+            <View className="flex-row items-center gap-2 py-3">
+              <AntDesign name="check-circle" size={20} color="#16A34A" />
+              <Text className="font-bodyMedium text-sm text-green-700">
+                You've told {firstName} you're on your way
+              </Text>
+            </View>
+          )}
+        </View>
+
+        <Text className="text-center pb-5 font-body text-xs text-text1">
           Allerta is a trusted-contact safety layer. For police, ambulance or
           fire, contact official emergency services.
         </Text>
       </ScrollView>
-
-      <View
-        className="items-center justify-center rounded-t-lg bg-background1 px-4 pt-4"
-        style={{ paddingBottom: Math.max(insets.bottom, 16) }}
-      >
-        {!notified ? (
-          <Button
-            className="bg-green-600"
-            textClassName="text-white"
-            onPress={onSubmit}
-            disabled={isPending || emergencyId === null}
-          >
-            {isPending ? (
-              <View className="flex-row items-center gap-2">
-                <ActivityIndicator color="#fff" />
-                <Text className="text-white">SENDING...</Text>
-              </View>
-            ) : (
-              <View className="flex-row items-center gap-2">
-                <Ionicons name="notifications-outline" size={20} color="#fff" />
-                <Text className="font-button text-base text-white">
-                  I'M ON MY WAY
-                </Text>
-              </View>
-            )}
-          </Button>
-        ) : (
-          <View className="flex-row items-center gap-2 py-3">
-            <AntDesign name="check-circle" size={20} color="#16A34A" />
-            <Text className="font-bodyMedium text-sm text-green-700">
-              You've told {firstName} you're on your way
-            </Text>
-          </View>
-        )}
-        <Text className="mt-2 text-center font-body text-sm text-text1">
-          {firstName} will be notified immediately
-        </Text>
-      </View>
     </SafeAreaView>
   );
 }
