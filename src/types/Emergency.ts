@@ -18,6 +18,7 @@ export interface Emergency {
   ended_at: string | null;
   created_at: string;
   updated_at: string;
+  full_name?: string;
 }
 
 export interface EmergencyLocation {
@@ -28,6 +29,8 @@ export interface EmergencyLocation {
   address: string | null;
   created_at: string;
   updated_at: string;
+  full_name?: string;
+  username?: string;
 }
 
 export type EmergencyHistory = EmergencyLocation[];
