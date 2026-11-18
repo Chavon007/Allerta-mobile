@@ -21,6 +21,9 @@ export interface Emergency {
   full_name?: string;
 }
 
+export interface MyEmergency extends Emergency {
+  recipients?: { id: number; contact?: { id: number; full_name: string } }[];
+}
 export interface EmergencyLocation {
   id: number;
   emergency_id: number;
