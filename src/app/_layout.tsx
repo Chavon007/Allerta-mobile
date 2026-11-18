@@ -12,7 +12,7 @@ import Toast from "react-native-toast-message";
 import { Inter_400Regular, Inter_500Medium } from "@expo-google-fonts/inter";
 import { useAuthStore } from "@/store/authStore";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-
+import ActiveEmergencyRestorer from "@/components/ActiveEmergencyRestorer";
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
@@ -46,8 +46,11 @@ export default function RootLayout() {
     };
   }, [ready]);
 
+  const token = useAuthStore((state) => state.token);
+
   return (
     <QueryClientProvider client={queryClient}>
+      {token && <ActiveEmergencyRestorer />}
       <Stack
         screenOptions={{
           headerShown: false,
