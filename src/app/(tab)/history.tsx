@@ -18,17 +18,17 @@ const History = () => {
       <StatusBar style="dark" />
       <ScrollView
         className="flex-1"
-        contentContainerClassName="gap-4 px-4 pb-8 pt-3"
+        contentContainerClassName="gap-4 px-4 pb-24 pt-3"
         showsVerticalScrollIndicator={false}
       >
         <View className="gap-1">
           <Text className="font-header text-3xl text-text3">History</Text>
-          <Text className="font-body text-sm text-text1">
+          <Text className="font-body text-sm text-text3/90">
             Every emergency session is recorded for your records
           </Text>
         </View>
 
-        <Text className="font-bodyMedium text-[10px] uppercase tracking-wider text-text1">
+        <Text className="font-headerMedium text-[13px] uppercase tracking-widest text-text1/90">
           Emergency sessions
         </Text>
 
@@ -42,10 +42,11 @@ const History = () => {
           </View>
         )}
 
-        {data.map((e) => (
+        {data.map((e, i) => (
           <EmergencydetailCard
             key={e.id}
             date={e.started_at}
+            index={i}
             started={fmt(e.started_at)}
             ended={fmt(e.ended_at)}
             address={e.latest_address ?? "Address not available"}
