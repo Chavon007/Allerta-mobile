@@ -2,6 +2,7 @@ import {
   Emergency,
   EmergencyHistory,
   EmergencyLocation,
+  MyEmergency,
 } from "@/types/Emergency";
 import { AddContactDTO } from "@/schema/contactSchema";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -80,7 +81,17 @@ const respondEmergency = async ({
   });
   return response.data;
 };
+const getUserAllEmergency = async (): Promise<MyEmergency[]> => {
+  const response = await apiClient.get("/emergency/mine");
+  return response.data;
+};
 
+export const useGetUserAllEmergency = () => {
+  return useQuery({
+    queryKey: ["my-emergency"],
+    queryFn: getUserAllEmergency,
+  });
+};
 export const useAddContactMutation = () => {
   const queryClient = useQueryClient();
 
@@ -182,6 +193,7 @@ export const useEndEmergency = () => {
     mutationFn: endEmergency,
     onSuccess: (_data, id) => {
       queryClient.invalidateQueries({ queryKey: ["emergency", id] });
+      queryClient.invalidateQueries({ queryKey: ["my-emergency"] });
       Toast.show({
         type: "success",
         text1: "Emergency has ended",
