@@ -9,7 +9,8 @@ import {
 } from "react-native";
 import { useAuthStore } from "@/store/authStore";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useFetchContact } from "@/api/emergency";
+import { useFetchContact, useGetUserAllEmergency } from "@/api/emergency";
+
 import {
   MaterialCommunityIcons,
   Ionicons,
@@ -19,41 +20,69 @@ import {
 } from "@expo/vector-icons";
 import { Link } from "expo-router";
 
-const items = [
-  {
-    type: "journey",
-    title: "Lekki phase 1, Lagos",
-    subtitle: "25 September 2026 8:29 AM - 8:30 AM",
-    status: "Ended",
-    icon: "location-pin",
-    iconLibrary: "SimpleLineIcons",
-    iconColor: "#3d7a9a",
-  },
-  {
-    type: "safety",
-    title: "Safety Journey",
-    subtitle: "Share an ETA on Your way home",
-    status: "V2",
-    icon: "location-arrow",
-    iconLibrary: "FontAwesome",
-    iconColor: "black",
-    href: "/",
-  },
-  {
-    type: "recipient",
-    title: "Recipient preview",
-    subtitle: "See what your contact shared with you",
-    icon: "bell-ring-outline",
-    iconLibrary: "MaterialCommunityIcons",
-    iconColor: "#3d7a9a",
-    href: "/recipient",
-  },
-];
+const fmtDate = (d: string) =>
+  new Date(d).toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+
+const fmtTime = (d: string) =>
+  new Date(d).toLocaleTimeString([], {
+    hour: "numeric",
+    minute: "2-digit",
+  });
 
 const Home = () => {
   const user = useAuthStore((state) => state.user);
 
   const { data, isLoading, isError } = useFetchContact();
+  const { data: emergency, isLoading: isLoadingEmergency } =
+    useGetUserAllEmergency();
+
+  // backend returns newest first, so the latest is the first item
+  const latest = emergency?.[0];
+  const isActive = latest?.status === "active";
+
+  const latestSubtitle = latest
+    ? `${fmtDate(latest.started_at)} ${fmtTime(latest.started_at)}${
+        latest.ended_at ? ` - ${fmtTime(latest.ended_at)}` : " - Ongoing"
+      }`
+    : "No emergencies yet";
+
+  const items = [
+    {
+      type: "journey",
+      title: isLoadingEmergency
+        ? "Loading..."
+        : (latest?.latest_address ?? "No recent emergency"),
+      subtitle: latestSubtitle,
+      status: latest ? (isActive ? "Active" : "Ended") : undefined,
+      icon: "location-pin",
+      iconLibrary: "SimpleLineIcons",
+      iconColor: "#3d7a9a",
+      href: "/(tab)/history",
+    },
+    {
+      type: "safety",
+      title: "Safety Journey",
+      subtitle: "Share an ETA on Your way home",
+      status: "V2",
+      icon: "location-arrow",
+      iconLibrary: "FontAwesome",
+      iconColor: "black",
+      href: "/",
+    },
+    {
+      type: "recipient",
+      title: "Recipient preview",
+      subtitle: "See what your contact shared with you",
+      icon: "bell-ring-outline",
+      iconLibrary: "MaterialCommunityIcons",
+      iconColor: "#3d7a9a",
+      href: "/recipient",
+    },
+  ];
 
   const count = data?.length ?? 0;
   const MAX_CONTACTS = 3;
@@ -67,6 +96,7 @@ const Home = () => {
 
     return `${name[0][0]}${name[name.length - 1][0]}`.toUpperCase();
   };
+
   const time = new Date().getHours();
 
   let greetings;
@@ -108,15 +138,23 @@ const Home = () => {
         </View>
 
         {/* Safety Status */}
-        <View className="mt-4 self-start flex-row items-center gap-1 rounded-full bg-green-100 px-3 py-2">
+        <View
+          className={`mt-4 self-start flex-row items-center gap-1 rounded-full px-3 py-2 ${
+            isActive ? "bg-emergencyLight" : "bg-green-100"
+          }`}
+        >
           <MaterialCommunityIcons
-            name="shield-check-outline"
+            name={isActive ? "shield-alert-outline" : "shield-check-outline"}
             size={14}
-            color="#22c55e"
+            color={isActive ? "#D91E2A" : "#22c55e"}
           />
 
-          <Text className="font-bodyMedium text-xs text-green-500">
-            You're safe
+          <Text
+            className={`font-bodyMedium text-xs ${
+              isActive ? "text-emergency" : "text-green-500"
+            }`}
+          >
+            {isActive ? "Emergency active" : "You're safe"}
           </Text>
         </View>
 
@@ -269,7 +307,10 @@ const Home = () => {
 
                   {/* Content */}
                   <View className="ml-3 flex-1">
-                    <Text className="font-bodyMedium text-sm text-text3">
+                    <Text
+                      numberOfLines={1}
+                      className="font-bodyMedium text-sm text-text3"
+                    >
                       {item.title}
                     </Text>
 
@@ -283,8 +324,20 @@ const Home = () => {
 
                   {/* Status */}
                   {item.status && (
-                    <View className="ml-2 rounded-full bg-[#edf5f9] px-2.5 py-1">
-                      <Text className="font-bodyMedium text-[10px] text-background">
+                    <View
+                      className={`ml-2 rounded-full px-2.5 py-1 ${
+                        item.status === "Active"
+                          ? "bg-emergencyLight"
+                          : "bg-[#edf5f9]"
+                      }`}
+                    >
+                      <Text
+                        className={`font-bodyMedium text-[10px] ${
+                          item.status === "Active"
+                            ? "text-emergency"
+                            : "text-background"
+                        }`}
+                      >
                         {item.status}
                       </Text>
                     </View>
@@ -304,7 +357,7 @@ const Home = () => {
         </View>
 
         <View className="mt-5">
-          <Text className=" font-body text-xs text-text1">
+          <Text className="font-body text-xs text-text1">
             Your location is not continuously shared. Live sharing begins only
             during an active emergency.
           </Text>
