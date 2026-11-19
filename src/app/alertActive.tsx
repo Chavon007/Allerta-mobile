@@ -15,7 +15,6 @@ import {
   useEndEmergency,
   useSendLocation,
   useGetEmergency,
-  useFetchContact,
 } from "@/api/emergency";
 import { useEmergencyState } from "@/store/emergencyStore";
 import { useWatchLocation } from "@/hooks/useLocation";
@@ -33,7 +32,6 @@ export default function AlertActive() {
   const { mutate: sendLocation } = useSendLocation();
   const { data: emergency, error, status } = useGetEmergency(emergencyId, 5000);
   const [localCoords, setLocalCoords] = useState<Coords | null>(null);
-  const { data: contacts = [] } = useFetchContact();
 
   useFocusEffect(
     useCallback(() => {
@@ -64,6 +62,10 @@ export default function AlertActive() {
       })
     : "--";
 
+  const recipients = emergency?.recipients ?? [];
+
+  const toCardStatus = (s: string) =>
+    s === "on_my_way" ? ("On the way" as const) : ("Notified" as const);
   const onEnd = () => {
     if (emergencyId === null || isPending) return;
     end(emergencyId, {
@@ -127,14 +129,14 @@ export default function AlertActive() {
         <LocationUpdateCard
           address={address}
           time={lastUpdate}
-          contact={contacts.length}
+          contact={recipients.length}
         />
 
         <ContactStatusCard
-          contacts={contacts.map((c: any) => ({
-            id: String(c.id),
-            fullName: c.full_name ?? c.fullName ?? c.name,
-            status: "Notified" as const, // placeholder, see note below
+          contacts={recipients.map((r) => ({
+            id: String(r.id),
+            fullName: r.contact?.full_name ?? "Contact",
+            status: toCardStatus(r.status),
           }))}
         />
       </ScrollView>
