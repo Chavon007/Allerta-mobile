@@ -10,30 +10,39 @@ import { StatusBar } from "expo-status-bar";
 import Button from "@/components/Button";
 import { Linking } from "react-native";
 import * as Clipboard from "expo-clipboard";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import Feather from "@expo/vector-icons/Feather";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import LocationUpdateCard from "@/components/locationUpdateCard";
 import LocationMap from "@/components/LocationMap";
+
 import {
   useRecieveEmergency,
   useRespondEmergency,
   useGetEmergency,
 } from "@/api/emergency";
 export default function seeAlert() {
+  const router = useRouter();
   const insets = useSafeAreaInsets();
   const [notified, setNotified] = useState(false);
   const { id } = useLocalSearchParams<{ id?: string }>();
-  const { data: list = [] } = useRecieveEmergency();
+  const { data: list = [], isLoading: listLoading } = useRecieveEmergency();
   const { mutate, isPending } = useRespondEmergency();
 
   const emergencyId = id ? Number(id) : (list[0]?.id ?? null);
   const received = list.find((e) => e.id === emergencyId);
-  const { data: live } = useGetEmergency(emergencyId, 5000);
+  const { data: live, isLoading: liveLoading } = useGetEmergency(
+    emergencyId,
+    5000,
+  );
 
   const current = live ?? received;
 
+  const hasEnded =
+    live?.status === "ended" ||
+    (!listLoading && emergencyId !== null && !received);
+  const noEmergency = !listLoading && emergencyId == null;
   const fullName = received?.user.full_name ?? "Someone";
   const firstName = fullName.trim().split(" ")[0];
   const coords =
@@ -77,6 +86,40 @@ export default function seeAlert() {
     await Clipboard.setStringAsync(`${coords.latitude}, ${coords.longitude}`);
     Toast.show({ type: "success", text1: "Coordinates copied" });
   };
+
+  if (listLoading || (emergencyId !== null && liveLoading && !received)) {
+    return (
+      <SafeAreaView className="flex-1 items-center justify-center bg-emergencyLight">
+        <ActivityIndicator size="large" color="#D91E2A" />
+      </SafeAreaView>
+    );
+  }
+
+  if (noEmergency || hasEnded) {
+    return (
+      <SafeAreaView className="flex-1 items-center justify-center gap-4 bg-background1 px-6">
+        <StatusBar style="dark" />
+        <View className="h-16 w-16 items-center justify-center rounded-full bg-white">
+          <Feather name="check-circle" size={30} color="#16A34A" />
+        </View>
+        <Text className="text-center font-header text-2xl text-text3">
+          {noEmergency ? "No active emergency" : "This emergency has ended"}
+        </Text>
+        <Text className="text-center font-body text-sm text-text1">
+          {noEmergency
+            ? "There is nothing to respond to right now."
+            : "Live location sharing has stopped. You don't need to do anything else."}
+        </Text>
+        <Button
+          className="bg-white"
+          textClassName="text-text3"
+          onPress={() => router.replace("/recipient")}
+        >
+          Back to alerts
+        </Button>
+      </SafeAreaView>
+    );
+  }
   return (
     <SafeAreaView className="flex-1 bg-emergencyLight" edges={["top"]}>
       <StatusBar style="dark" />
