@@ -1,7 +1,7 @@
 import { View, Text } from "react-native";
 import React from "react";
 
-type Contactstatus = "Unnotified" | "Notified" | "Seen";
+type Contactstatus = "Unnotified" | "Notified" | "Seen" | "On the way";
 
 interface Contact {
   id: string;
@@ -14,20 +14,25 @@ interface contactStatusCardProps {
 
 const STATUS_INFO: Record<
   Contactstatus,
-  { message: string; badge: string; badgeText: string }
+  { message: (name: string) => string; badge: string; badgeText: string }
 > = {
   Unnotified: {
-    message: "Notification waiting to be sent",
+    message: () => "Notification waiting to be sent",
     badge: "bg-gray-100",
     badgeText: "text-gray-600",
   },
   Notified: {
-    message: "Push notification sent",
+    message: () => "Push notification sent",
     badge: "bg-blue-50",
     badgeText: "text-blue-700",
   },
   Seen: {
-    message: "Notification has been seen",
+    message: (name) => `${name} has your alert`,
+    badge: "bg-green-50",
+    badgeText: "text-green-700",
+  },
+  "On the way": {
+    message: (name) => `${name} is on the way to you`,
     badge: "bg-green-50",
     badgeText: "text-green-700",
   },
@@ -58,12 +63,13 @@ const getInitials = (name: string) =>
 export default function ContactStatusCard({
   contacts,
 }: contactStatusCardProps) {
+  const firstName = contacts.fullName.trim().split(" ")[0];
   return (
     <View className="rounded-2xl bg-white px-4">
       {contacts.map((contact, i) => {
         const info = STATUS_INFO[contact.status];
         const avatar = getAvatarColor(contact.fullName);
-
+        const firstName = contact.fullName.trim().split(" ")[0];
         return (
           <View
             key={contact.id}
@@ -80,11 +86,12 @@ export default function ContactStatusCard({
             </View>
 
             <View className="flex-1">
-              <Text className="font-bodyMedium text-sm text-gray-900">
+              <Text className="font-bodyMedium text-sm text-text3">
                 {contact.fullName}
               </Text>
-              <Text className="font-body text-xs text-gray-500">
-                {info.message}
+
+              <Text className="font-body text-xs text-text1">
+                {info.message(firstName)}
               </Text>
             </View>
 

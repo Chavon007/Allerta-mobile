@@ -6,7 +6,13 @@ export interface EmergencyContact {
 }
 
 export type EmergencyStatus = "active" | "ended";
+export type RecipientStatus = "notifed" | "on my way";
 
+export interface EmergencyRecipientInfo {
+  id: number;
+  status: RecipientStatus;
+  contact?: { id: number; full_name: string };
+}
 export interface Emergency {
   id: number;
   user_id: number;
@@ -19,11 +25,10 @@ export interface Emergency {
   created_at: string;
   updated_at: string;
   full_name?: string;
+  recipients?: EmergencyRecipientInfo[];
 }
 
-export interface MyEmergency extends Emergency {
-  recipients?: { id: number; contact?: { id: number; full_name: string } }[];
-}
+export interface MyEmergency extends Emergency {}
 export interface EmergencyLocation {
   id: number;
   emergency_id: number;
