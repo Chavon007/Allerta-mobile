@@ -11,16 +11,14 @@ import Button from "@/components/Button";
 import ContactStatusCard from "@/components/contactStatusCard";
 import LocationUpdateCard from "@/components/locationUpdateCard";
 import LocationMap from "@/components/LocationMap";
-import {
-  useEndEmergency,
-  useSendLocation,
-  useGetEmergency,
-} from "@/api/emergency";
+import { stopTracking, startTracking } from "@/tasks/tracking";
+import { useEndEmergency, useGetEmergency } from "@/api/emergency";
 import { useEmergencyState } from "@/store/emergencyStore";
-import { useWatchLocation } from "@/hooks/useLocation";
+
 import { Coords, getCurrentCoords } from "@/hooks/useLocation";
 import { useLocalAddress } from "@/hooks/useLocalAddress";
 import { useEffect, useState } from "react";
+import { ensureBackgroundPermission } from "@/hooks/useBackgroundPermission";
 export default function AlertActive() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -29,7 +27,7 @@ export default function AlertActive() {
   const setEmergencyId = useEmergencyState((s) => s.setEmergencyId);
 
   const { mutate: end, isPending } = useEndEmergency();
-  const { mutate: sendLocation } = useSendLocation();
+
   const { data: emergency, error, status } = useGetEmergency(emergencyId, 5000);
   const [localCoords, setLocalCoords] = useState<Coords | null>(null);
 
@@ -39,10 +37,6 @@ export default function AlertActive() {
       return () => sub.remove();
     }, []),
   );
-
-  useWatchLocation(emergencyId !== null, (coords) => {
-    if (emergencyId !== null) sendLocation({ id: emergencyId, ...coords });
-  });
 
   const hasLocation =
     emergency?.latest_latitude != null && emergency?.latest_longitude != null;
@@ -69,7 +63,8 @@ export default function AlertActive() {
   const onEnd = () => {
     if (emergencyId === null || isPending) return;
     end(emergencyId, {
-      onSuccess: () => {
+      onSuccess: async () => {
+        await stopTracking();
         setEmergencyId(null);
         router.replace("/");
       },
@@ -81,6 +76,13 @@ export default function AlertActive() {
       .then(setLocalCoords)
       .catch(() => {});
   }, []);
+
+  useEffect(() => {
+    if (emergencyId === null) return;
+    ensureBackgroundPermission().then((ok) => {
+      if (ok) startTracking(emergencyId);
+    });
+  }, [emergencyId]);
 
   const coords: Coords | null = hasLocation
     ? {

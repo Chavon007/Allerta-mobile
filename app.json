@@ -8,7 +8,10 @@
     "scheme": "allertamobile",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "icon": "./assets/expo.icon",
+      "infoPlist": {
+        "UIBackgroundModes": ["location"]
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -20,7 +23,10 @@
       "predictiveBackGestureEnabled": false,
       "permissions": [
         "android.permission.ACCESS_COARSE_LOCATION",
-        "android.permission.ACCESS_FINE_LOCATION"
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_BACKGROUND_LOCATION",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.FOREGROUND_SERVICE_LOCATION"
       ],
       "package": "com.anonymous.allertamobile"
     },
@@ -40,7 +46,12 @@
       [
         "expo-location",
         {
-          "locationWhenInUsePermission": "Allerta uses your location to share it with your trusted contacts during an emergency."
+          "locationAlwaysAndWhenInUsePermission": "Allerta uses your location in the background during an emergency so your trusted contacts can still see where you are if you close the app.",
+          "locationAlwaysPermission": "Allerta uses your location in the background during an emergency so your trusted contacts can still see where you are if you close the app.",
+          "locationWhenInUsePermission": "Allerta uses your location to share it with your trusted contacts during an emergency.",
+          "isAndroidBackgroundLocationEnabled": true,
+          "isAndroidForegroundServiceEnabled": true,
+          "isIosBackgroundLocationEnabled": true
         }
       ],
       "expo-secure-store",

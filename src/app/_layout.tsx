@@ -13,6 +13,7 @@ import { Inter_400Regular, Inter_500Medium } from "@expo-google-fonts/inter";
 import { useAuthStore } from "@/store/authStore";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import ActiveEmergencyRestorer from "@/components/ActiveEmergencyRestorer";
+import "@/tasks/locationTask";
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
