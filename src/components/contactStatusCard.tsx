@@ -63,13 +63,14 @@ const getInitials = (name: string) =>
 export default function ContactStatusCard({
   contacts,
 }: contactStatusCardProps) {
-  const firstName = contacts.fullName.trim().split(" ")[0];
   return (
     <View className="rounded-2xl bg-white px-4">
       {contacts.map((contact, i) => {
+        const name = contact.fullName ?? "Contact";
         const info = STATUS_INFO[contact.status];
-        const avatar = getAvatarColor(contact.fullName);
-        const firstName = contact.fullName.trim().split(" ")[0];
+        const avatar = getAvatarColor(name);
+        const firstName = name.trim().split(" ")[0];
+
         return (
           <View
             key={contact.id}
@@ -81,22 +82,19 @@ export default function ContactStatusCard({
               className={`h-10 w-10 items-center justify-center rounded-full ${avatar.bg}`}
             >
               <Text className={`font-headerMedium text-sm ${avatar.text}`}>
-                {getInitials(contact.fullName)}
+                {getInitials(name)}
               </Text>
             </View>
 
             <View className="flex-1">
-              <Text className="font-bodyMedium text-sm text-text3">
-                {contact.fullName}
-              </Text>
-
+              <Text className="font-bodyMedium text-sm text-text3">{name}</Text>
               <Text className="font-body text-xs text-text1">
                 {info.message(firstName)}
               </Text>
             </View>
 
             <View className={`rounded-full px-2.5 py-1 ${info.badge}`}>
-              <Text className={`font-bodyMedium text-xs ${info.badgeText}`}>
+              <Text className={`font-headerMedium text-xs ${info.badgeText}`}>
                 {contact.status}
               </Text>
             </View>

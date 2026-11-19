@@ -70,7 +70,7 @@ const EmergencyButton = () => {
             color="white"
           />
           <Text className="text-white font-header text-xl mt-2">
-            {active ? "VIEW ALERT" : "EMERGENCY"}
+            {active ? "VIEW EMERGENCY" : "EMERGENCY"}
           </Text>
           <Text className="text-white font-body text-xs mt-1">
             {active ? "Emergency in progress" : "Press to alert"}
