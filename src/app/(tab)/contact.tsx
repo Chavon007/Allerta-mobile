@@ -21,8 +21,7 @@ import { AddContactDTO, addContactSchema } from "@/schema/contactSchema";
 const Contact = () => {
   const [modal, setModal] = useState(false);
   const { mutate, isPending } = useAddContactMutation();
-  const { data, isLoading, isError, refetch, isRefetching } =
-    useFetchContact();
+  const { data, isLoading, isError, refetch, isRefetching } = useFetchContact();
 
   // Refetch every time the screen comes back into focus (skip the first one)
   const isFirstFocus = useRef(true);
@@ -77,7 +76,9 @@ const Contact = () => {
         refreshControl={
           <RefreshControl
             refreshing={isRefetching}
-            onRefresh={refetch}
+            onRefresh={async () => {
+              await refetch();
+            }}
             tintColor="#3d7a9a"
           />
         }
@@ -194,7 +195,9 @@ const Contact = () => {
                             className="bg-background mt-2"
                             spinnerColor="#ffffff"
                             isLoading={isPending}
-                            onPress={methods.handleSubmit(handleAddContact)}
+                            onPress={() => {
+                              void methods.handleSubmit(handleAddContact)();
+                            }}
                             loadingText="Adding..."
                           >
                             Add contact

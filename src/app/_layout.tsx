@@ -4,20 +4,28 @@ import "./global.css";
 import { useEffect, useState } from "react";
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
+import { useRef } from "react";
+import {
+  registerPushListeners,
+  handleInitialNotification,
+} from "@/notifications/handlers";
 import {
   Manrope_600SemiBold,
   Manrope_700Bold,
 } from "@expo-google-fonts/manrope";
+import { createEmergencyChannel } from "@/notifications/channel";
 import Toast from "react-native-toast-message";
 import { Inter_400Regular, Inter_500Medium } from "@expo-google-fonts/inter";
 import { useAuthStore } from "@/store/authStore";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import ActiveEmergencyRestorer from "@/components/ActiveEmergencyRestorer";
 import "@/tasks/locationTask";
+import PushTokenRegistrar from "@/components/PushTokenRegistrar";
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const [queryClient] = useState(() => new QueryClient());
+
   const hydrate = useAuthStore((state) => state.hydrate);
   const isLoading = useAuthStore((state) => state.isLoading);
 
@@ -39,6 +47,9 @@ export default function RootLayout() {
   }, [ready]);
 
   useEffect(() => {
+    createEmergencyChannel();
+  }, []);
+  useEffect(() => {
     if (!ready) return;
 
     const pending = startLocationWarmup();
@@ -49,9 +60,24 @@ export default function RootLayout() {
 
   const token = useAuthStore((state) => state.token);
 
+  useEffect(() => {
+    if (!ready || !token) return;
+
+    const cleanup = registerPushListeners(() => {
+      queryClient.invalidateQueries({ queryKey: ["receive-emeregency"] });
+      queryClient.invalidateQueries({ queryKey: ["emergency"] });
+      queryClient.invalidateQueries({ queryKey: ["my-emergency"] });
+    });
+
+    handleInitialNotification();
+
+    return cleanup;
+  }, [ready, token]);
+
   return (
     <QueryClientProvider client={queryClient}>
       {token && <ActiveEmergencyRestorer />}
+      {token && <PushTokenRegistrar />}
       <Stack
         screenOptions={{
           headerShown: false,
