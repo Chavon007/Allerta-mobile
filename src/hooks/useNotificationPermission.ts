@@ -1,5 +1,9 @@
+
 import { Alert, PermissionsAndroid, Platform } from "react-native";
-import messaging from "@react-native-firebase/messaging";
+import {
+  getMessaging,
+  AuthorizationStatus,
+} from "@react-native-firebase/messaging";
 
 export async function ensureNotificationPermission(): Promise<boolean> {
   // Android 12 and below: no runtime permission needed
@@ -12,7 +16,7 @@ export async function ensureNotificationPermission(): Promise<boolean> {
 
     if (already) return true;
 
-    // short explanation first why you need the notification to be allowed
+    // Explain why notification permission is needed
     await new Promise<void>((resolve) =>
       Alert.alert(
         "Allow notifications",
@@ -29,11 +33,11 @@ export async function ensureNotificationPermission(): Promise<boolean> {
     return result === PermissionsAndroid.RESULTS.GRANTED;
   }
 
-  // IOS
+  // iOS
+  const status = await getMessaging().requestPermission();
 
-  const status = await messaging().requestPermission();
   return (
-    status === messaging.AuthorizationStatus.AUTHORIZED ||
-    status === messaging.AuthorizationStatus.PROVISIONAL
+    status === AuthorizationStatus.AUTHORIZED ||
+    status === AuthorizationStatus.PROVISIONAL
   );
 }

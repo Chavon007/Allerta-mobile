@@ -4,6 +4,11 @@ import "./global.css";
 import { useEffect, useState } from "react";
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
+import { useRef } from "react";
+import {
+  registerPushListeners,
+  handleInitialNotification,
+} from "@/notifications/handlers";
 import {
   Manrope_600SemiBold,
   Manrope_700Bold,
@@ -15,11 +20,12 @@ import { useAuthStore } from "@/store/authStore";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import ActiveEmergencyRestorer from "@/components/ActiveEmergencyRestorer";
 import "@/tasks/locationTask";
-import { ensureNotificationPermission } from "@/hooks/useNotificationPermission";
+import PushTokenRegistrar from "@/components/PushTokenRegistrar";
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const [queryClient] = useState(() => new QueryClient());
+
   const hydrate = useAuthStore((state) => state.hydrate);
   const isLoading = useAuthStore((state) => state.isLoading);
 
@@ -55,15 +61,23 @@ export default function RootLayout() {
   const token = useAuthStore((state) => state.token);
 
   useEffect(() => {
-    if (!token) return;
-    ensureNotificationPermission().then((ok) => {
-      if (ok) {
-      }
+    if (!ready || !token) return;
+
+    const cleanup = registerPushListeners(() => {
+      queryClient.invalidateQueries({ queryKey: ["receive-emeregency"] });
+      queryClient.invalidateQueries({ queryKey: ["emergency"] });
+      queryClient.invalidateQueries({ queryKey: ["my-emergency"] });
     });
-  }, [token]);
+
+    handleInitialNotification();
+
+    return cleanup;
+  }, [ready, token]);
+
   return (
     <QueryClientProvider client={queryClient}>
       {token && <ActiveEmergencyRestorer />}
+      {token && <PushTokenRegistrar />}
       <Stack
         screenOptions={{
           headerShown: false,
