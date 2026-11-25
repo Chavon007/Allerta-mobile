@@ -131,6 +131,7 @@ export default function AlertActive() {
         <LocationUpdateCard
           address={address}
           time={lastUpdate}
+          updatedAt={emergency?.updated_at}
           contact={recipients.length}
         />
 
