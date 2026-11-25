@@ -1,4 +1,3 @@
-
 {
   "expo": {
     "name": "allerta-mobile",
@@ -11,9 +10,7 @@
     "ios": {
       "icon": "./assets/expo.icon",
       "infoPlist": {
-        "UIBackgroundModes": [
-          "location"
-        ]
+        "UIBackgroundModes": ["location"]
       }
     },
     "android": {
@@ -30,7 +27,8 @@
         "android.permission.ACCESS_BACKGROUND_LOCATION",
         "android.permission.FOREGROUND_SERVICE",
         "android.permission.FOREGROUND_SERVICE_LOCATION",
-        "android.permission.POST_NOTIFICATIONS"
+        "android.permission.POST_NOTIFICATIONS",
+        "android.permission.RECEIVE_BOOT_COMPLETED"
       ],
       "package": "com.anonymous.allertamobile",
       "googleServicesFile": "./google-services.json"
@@ -41,6 +39,7 @@
     "plugins": [
       "@react-native-firebase/app",
       "@react-native-firebase/messaging",
+      "expo-task-manager",
       [
         "expo-build-properties",
         {
@@ -81,6 +80,16 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": false
+    },
+    "extra": {
+      "router": {
+        "asyncRoutes": {
+          "web": true
+        }
+      },
+      "eas": {
+        "projectId": "58898b5a-f6b5-4fcf-a812-69907dcd938c"
+      }
     }
   }
 }

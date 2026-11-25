@@ -4,13 +4,15 @@ import Feather from "@expo/vector-icons/Feather";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import React from "react";
-
+import { getStaleness } from "@/utils/staleness";
+import { useNow } from "@/hooks/useNow";
 interface locationCardProp {
   address: string;
   contact?: number;
   time: string;
   full_name?: string;
   username?: string;
+  updatedAt?: string | null;
 }
 
 function LocationUpdateCard({
@@ -19,17 +21,36 @@ function LocationUpdateCard({
   time,
   username,
   full_name,
+  updatedAt,
 }: locationCardProp) {
-   const rows: {
+  const now = useNow();
+  const stale = getStaleness(updatedAt, now);
+
+  const statusValue =
+    stale.level === "live"
+      ? "Live location updating"
+      : stale.level === "warning"
+        ? `Last updated ${stale.label}`
+        : `Location may be outdated. Last updated ${stale.label}`;
+
+  const statusColor =
+    stale.level === "live"
+      ? "#3d7a9a"
+      : stale.level === "warning"
+        ? "#D97706"
+        : "#D91E2A";
+  const rows: {
     icon: React.ComponentProps<typeof Feather>["name"];
     label: string;
     value: string;
+    color?: string;
   }[] = [
     { icon: "map-pin", label: "Current address", value: address },
     {
       icon: "radio",
       label: "Location status",
-      value: "Live location updating",
+      value: statusValue,
+      color: statusColor,
     },
     { icon: "clock", label: "Last update", value: time },
   ];
@@ -65,9 +86,7 @@ function LocationUpdateCard({
               {full_name}
             </Text>
             {username ? (
-              <Text className="font-body text-xs text-text1">
-                @{username}
-              </Text>
+              <Text className="font-body text-xs text-text1">@{username}</Text>
             ) : null}
           </View>
 
@@ -87,12 +106,19 @@ function LocationUpdateCard({
             i !== rows.length - 1 ? "border-b border-gray-100" : ""
           }`}
         >
-          <Feather name={r.icon} size={16} color="#3d7a9a" />
+          <Feather name={r.icon} size={16} color={r.color ?? "#3d7a9a"} />
           <View className="flex-1">
             <Text className="font-body text-[10px] uppercase tracking-wide text-text1">
               {r.label}
             </Text>
-            <Text className="font-bodyMedium text-sm text-black/70">
+            <Text
+              className="font-bodyMedium text-sm text-black/70"
+              style={
+                r.color && r.color !== "#3d7a9a"
+                  ? { color: r.color }
+                  : undefined
+              }
+            >
               {r.value}
             </Text>
           </View>

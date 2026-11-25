@@ -157,6 +157,7 @@ export default function seeAlert() {
           address={address}
           time={lastUpdate}
           full_name={fullName}
+          updatedAt={current?.updated_at}
           username={received?.user?.username}
         />
 

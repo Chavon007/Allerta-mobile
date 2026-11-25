@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1080397973895",
+    "project_id": "allerta-30e31",
+    "storage_bucket": "allerta-30e31.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1080397973895:android:ef737d5311aa33da07ab22",
+        "android_client_info": {
+          "package_name": "com.anonymous.allertamobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCzMT7s7opJVdXYrPmGQIsUI7uLDNa1xHU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

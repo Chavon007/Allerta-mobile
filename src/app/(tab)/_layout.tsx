@@ -65,12 +65,12 @@ function TabsLayout() {
         },
       }}
     >
-      <Tabs.Screen
+           <Tabs.Screen
         name="home"
         options={{
           title: "Home",
           tabBarIcon: ({ color, size }) => (
-            <SimpleLineIcons name="home" size={size} color={color} />
+            <SimpleLineIcons name="home" size={size} color={color as string} />
           ),
         }}
       />
@@ -80,7 +80,11 @@ function TabsLayout() {
         options={{
           title: "Contact",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="people-outline" size={size} color={color} />
+            <Ionicons
+              name="people-outline"
+              size={size}
+              color={color as string}
+            />
           ),
         }}
       />
@@ -93,7 +97,7 @@ function TabsLayout() {
             <MaterialIcons
               name="history-toggle-off"
               size={size}
-              color={color}
+              color={color as string}
             />
           ),
         }}
@@ -104,7 +108,11 @@ function TabsLayout() {
         options={{
           title: "Profile",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person-outline" size={size} color={color} />
+            <Ionicons
+              name="person-outline"
+              size={size}
+              color={color as string}
+            />
           ),
         }}
       />
