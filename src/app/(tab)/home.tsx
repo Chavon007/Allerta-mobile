@@ -1,5 +1,6 @@
 import React from "react";
 import EmergencyButton from "@/components/EmergencyButton";
+import ErrorState from "@/components/ErrorState";
 import {
   View,
   Text,
@@ -9,8 +10,11 @@ import {
 } from "react-native";
 import { useAuthStore } from "@/store/authStore";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useFetchContact, useGetUserAllEmergency } from "@/api/emergency";
-
+import {
+  useFetchContact,
+  useGetActiveEmergency,
+  useGetUserAllEmergency,
+} from "@/api/emergency";
 import {
   MaterialCommunityIcons,
   Ionicons,
@@ -36,13 +40,19 @@ const fmtTime = (d: string) =>
 const Home = () => {
   const user = useAuthStore((state) => state.user);
 
-  const { data, isLoading, isError } = useFetchContact();
-  const { data: emergency, isLoading: isLoadingEmergency } =
+  const {
+    data,
+    isLoading,
+    isError,
+    refetch: refetchContacts,
+  } = useFetchContact();
+  const { data: pages, isLoading: isLoadingEmergency } =
     useGetUserAllEmergency();
+  const { data: activeNow } = useGetActiveEmergency();
 
   // backend returns newest first, so the latest is the first item
-  const latest = emergency?.[0];
-  const isActive = latest?.status === "active";
+  const latest = pages?.pages[0]?.data[0];
+  const isActive = !!activeNow;
 
   const latestSubtitle = latest
     ? `${fmtDate(latest.started_at)} ${fmtTime(latest.started_at)}${
@@ -57,7 +67,11 @@ const Home = () => {
         ? "Loading..."
         : (latest?.latest_address ?? "No recent emergency"),
       subtitle: latestSubtitle,
-      status: latest ? (isActive ? "Active" : "Ended") : undefined,
+      status: latest
+        ? latest.status === "active"
+          ? "Active"
+          : "Ended"
+        : undefined,
       icon: "location-pin",
       iconLibrary: "SimpleLineIcons",
       iconColor: "#3d7a9a",
@@ -179,76 +193,82 @@ const Home = () => {
             </Link>
           </View>
 
-          <View className="rounded-2xl border border-[#e3eaf0] bg-white p-4">
-            <View className="flex-row items-center justify-between">
-              {isLoading ? (
-                <View className="flex-row items-center gap-3">
-                  <ActivityIndicator color="#3d7a9a" />
-                  <Text className="font-bodyMedium text-xs text-text1">
-                    Loading contacts...
-                  </Text>
-                </View>
-              ) : isError ? (
-                <Text className="font-bodyMedium text-xs text-red-500">
-                  Unable to load contacts
-                </Text>
-              ) : (
-                <View className="flex-row items-center gap-3">
-                  <View className="h-10 w-10 items-center justify-center rounded-full bg-background">
-                    <Ionicons name="people-outline" size={18} color="white" />
-                  </View>
-
-                  <View>
-                    <Text className="font-bodyMedium text-sm text-text3">
-                      {count} emergency {count === 1 ? "contact" : "contacts"}
-                    </Text>
-                    <Text className="mt-1 font-body text-xs text-text1">
-                      {count}/{MAX_CONTACTS} slots used
+          {isError ? (
+            <ErrorState
+              message="Couldn't load your contacts."
+              onRetry={refetchContacts}
+            />
+          ) : (
+            <View className="rounded-2xl border border-[#e3eaf0] bg-white p-4">
+              <View className="flex-row items-center justify-between">
+                {isLoading ? (
+                  <View className="flex-row items-center gap-3">
+                    <ActivityIndicator color="#3d7a9a" />
+                    <Text className="font-bodyMedium text-xs text-text1">
+                      Loading contacts...
                     </Text>
                   </View>
-                </View>
-              )}
-
-              {count > 0 && (
-                <View className="rounded-full bg-green-100 px-3 py-1.5">
-                  <Text className="font-bodyMedium text-xs text-green-500">
-                    Ready
-                  </Text>
-                </View>
-              )}
-            </View>
-
-            {/* Contacts */}
-            <View className="mt-5 flex-row items-center">
-              {isLoading || isError ? null : data && data.length > 0 ? (
-                data.map((c) => (
-                  <View key={c.id} className="mr-4 flex-row items-center gap-2">
-                    <View className="h-9 w-9 items-center justify-center rounded-full bg-[#ddeef8]">
-                      <Text className="font-headerMedium text-xs text-background">
-                        {getInitials(c.full_name)}
-                      </Text>
+                ) : (
+                  <View className="flex-row items-center gap-3">
+                    <View className="h-10 w-10 items-center justify-center rounded-full bg-background">
+                      <Ionicons name="people-outline" size={18} color="white" />
                     </View>
 
-                    <Text className="font-bodyMedium text-xs text-text3">
-                      {c.full_name.split(" ")[0]}
+                    <View>
+                      <Text className="font-bodyMedium text-sm text-text3">
+                        {count} emergency {count === 1 ? "contact" : "contacts"}
+                      </Text>
+                      <Text className="mt-1 font-body text-xs text-text1">
+                        {count}/{MAX_CONTACTS} slots used
+                      </Text>
+                    </View>
+                  </View>
+                )}
+
+                {count > 0 && (
+                  <View className="rounded-full bg-green-100 px-3 py-1.5">
+                    <Text className="font-bodyMedium text-xs text-green-500">
+                      Ready
                     </Text>
                   </View>
-                ))
-              ) : (
-                <Text className="font-body text-xs text-text1">
-                  You have not added any emergency contacts yet
-                </Text>
-              )}
+                )}
+              </View>
 
-              {!isLoading && !isError && count < MAX_CONTACTS && (
-                <Link href="/(tab)/contact" asChild>
-                  <Pressable className="ml-auto h-9 w-9 items-center justify-center rounded-full border border-[#dce5ec]">
-                    <AntDesign name="plus" size={18} color="#1e5975" />
-                  </Pressable>
-                </Link>
-              )}
+              {/* Contacts */}
+              <View className="mt-5 flex-row items-center">
+                {isLoading ? null : data && data.length > 0 ? (
+                  data.map((c) => (
+                    <View
+                      key={c.id}
+                      className="mr-4 flex-row items-center gap-2"
+                    >
+                      <View className="h-9 w-9 items-center justify-center rounded-full bg-[#ddeef8]">
+                        <Text className="font-headerMedium text-xs text-background">
+                          {getInitials(c.full_name)}
+                        </Text>
+                      </View>
+
+                      <Text className="font-bodyMedium text-xs text-text3">
+                        {c.full_name.split(" ")[0]}
+                      </Text>
+                    </View>
+                  ))
+                ) : (
+                  <Text className="font-body text-xs text-text1">
+                    You have not added any emergency contacts yet
+                  </Text>
+                )}
+
+                {!isLoading && count < MAX_CONTACTS && (
+                  <Link href="/(tab)/contact" asChild>
+                    <Pressable className="ml-auto h-9 w-9 items-center justify-center rounded-full border border-[#dce5ec]">
+                      <AntDesign name="plus" size={18} color="#1e5975" />
+                    </Pressable>
+                  </Link>
+                )}
+              </View>
             </View>
-          </View>
+          )}
         </View>
 
         {/* Recent Activity */}
@@ -276,7 +296,6 @@ const Home = () => {
 
               const content = (
                 <View className="flex-row items-center rounded-2xl border border-[#e3eaf0] bg-white p-4">
-                  {/* Icon */}
                   <View
                     className={`h-11 w-11 items-center justify-center rounded-xl ${iconBackground}`}
                   >
@@ -305,7 +324,6 @@ const Home = () => {
                     )}
                   </View>
 
-                  {/* Content */}
                   <View className="ml-3 flex-1">
                     <Text
                       numberOfLines={1}
@@ -322,7 +340,6 @@ const Home = () => {
                     </Text>
                   </View>
 
-                  {/* Status */}
                   {item.status && (
                     <View
                       className={`ml-2 rounded-full px-2.5 py-1 ${

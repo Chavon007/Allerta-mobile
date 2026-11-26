@@ -11,6 +11,8 @@ import {
 import { useFocusEffect } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import ContactCard from "@/components/contactCard";
+import ErrorState from "@/components/ErrorState";
+import EmptyState from "@/components/EmptyState";
 import { AntDesign } from "@expo/vector-icons";
 import Form from "@/components/Form";
 import InputField from "@/components/inputField";
@@ -58,12 +60,12 @@ const Contact = () => {
   if (isError)
     return (
       <View className="flex-1 items-center justify-center bg-background1 px-5">
-        <Text className="font-headerMedium text-base text-text3">
-          Unable to load contacts
-        </Text>
-        <Text className="mt-1 text-center font-body text-xs text-text1">
-          Something went wrong while fetching your emergency contacts.
-        </Text>
+        <View className="w-full">
+          <ErrorState
+            message="Unable to load your emergency contacts."
+            onRetry={refetch}
+          />
+        </View>
       </View>
     );
 
@@ -115,14 +117,11 @@ const Contact = () => {
                 );
               })
             ) : (
-              <View className="items-center rounded-2xl border border-[#e3eaf0] bg-white px-5 py-8">
-                <Text className="font-headerMedium text-base text-text3">
-                  No emergency contacts
-                </Text>
-                <Text className="mt-1 text-center font-body text-xs text-text1">
-                  You have not added any emergency contacts yet.
-                </Text>
-              </View>
+              <EmptyState
+                icon="users"
+                title="No emergency contacts"
+                text="Add someone you trust. They will be alerted when you press Emergency."
+              />
             )}
           </View>
         </View>
@@ -144,7 +143,7 @@ const Contact = () => {
           behavior="padding"
           className="absolute inset-0 justify-end bg-black/30"
         >
-          <View className="rounded-t-3xl bg-white px-5 pb-8 pt-6 h-[40%]">
+          <View className="h-[40%] rounded-t-3xl bg-white px-5 pb-8 pt-6">
             <Text className="font-headerMedium text-base text-text3">
               Add contact through their username or email
             </Text>
@@ -192,7 +191,7 @@ const Contact = () => {
 
                           <Button
                             textClassName="text-white"
-                            className="bg-background mt-2"
+                            className="mt-2 bg-background"
                             spinnerColor="#ffffff"
                             isLoading={isPending}
                             onPress={() => {
@@ -205,7 +204,7 @@ const Contact = () => {
                         </View>
 
                         <Pressable onPress={() => setModal(false)}>
-                          <Text className="font-bodyMedium text-center mt-6 text-xm text-backgroundLight font-medium">
+                          <Text className="mt-6 text-center font-bodyMedium text-sm text-backgroundLight">
                             Back
                           </Text>
                         </Pressable>

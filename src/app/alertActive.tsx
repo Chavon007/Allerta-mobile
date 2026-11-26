@@ -6,7 +6,7 @@ import {
 import { StatusBar } from "expo-status-bar";
 import { useRouter, useFocusEffect } from "expo-router";
 import { BackHandler } from "react-native";
-import { useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Button from "@/components/Button";
 import ContactStatusCard from "@/components/contactStatusCard";
 import LocationUpdateCard from "@/components/locationUpdateCard";
@@ -14,11 +14,10 @@ import LocationMap from "@/components/LocationMap";
 import { stopTracking, startTracking } from "@/tasks/tracking";
 import { useEndEmergency, useGetEmergency } from "@/api/emergency";
 import { useEmergencyState } from "@/store/emergencyStore";
-
 import { Coords, getCurrentCoords } from "@/hooks/useLocation";
 import { useLocalAddress } from "@/hooks/useLocalAddress";
-import { useEffect, useState } from "react";
 import { ensureBackgroundPermission } from "@/hooks/useBackgroundPermission";
+
 export default function AlertActive() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -27,8 +26,7 @@ export default function AlertActive() {
   const setEmergencyId = useEmergencyState((s) => s.setEmergencyId);
 
   const { mutate: end, isPending } = useEndEmergency();
-
-  const { data: emergency, error, status } = useGetEmergency(emergencyId, 5000);
+  const { data: emergency, isError } = useGetEmergency(emergencyId, 5000);
   const [localCoords, setLocalCoords] = useState<Coords | null>(null);
 
   useFocusEffect(
@@ -60,6 +58,7 @@ export default function AlertActive() {
 
   const toCardStatus = (s: string) =>
     s === "on_my_way" ? ("On the way" as const) : ("Notified" as const);
+
   const onEnd = () => {
     if (emergencyId === null || isPending) return;
     end(emergencyId, {
@@ -95,6 +94,7 @@ export default function AlertActive() {
 
   const address =
     emergency?.latest_address ?? localAddress ?? "Finding your address...";
+
   return (
     <SafeAreaView className="flex-1 bg-emergencyLight" edges={["top"]}>
       <StatusBar style="dark" />
@@ -120,6 +120,15 @@ export default function AlertActive() {
           </Text>
         </View>
 
+        {isError && (
+          <View className="rounded-xl bg-white px-3 py-2">
+            <Text className="font-bodyMedium text-xs text-emergency">
+              Can't reach the server. Your location will keep sending when the
+              connection returns.
+            </Text>
+          </View>
+        )}
+
         {coords ? (
           <LocationMap address={address} coords={coords} />
         ) : (
@@ -135,13 +144,15 @@ export default function AlertActive() {
           contact={recipients.length}
         />
 
-        <ContactStatusCard
-          contacts={recipients.map((r) => ({
-            id: String(r.id),
-            fullName: r.contact?.full_name ?? "Contact",
-            status: toCardStatus(r.status),
-          }))}
-        />
+        {recipients.length > 0 && (
+          <ContactStatusCard
+            contacts={recipients.map((r) => ({
+              id: String(r.id),
+              fullName: r.contact?.full_name ?? "Contact",
+              status: toCardStatus(r.status),
+            }))}
+          />
+        )}
       </ScrollView>
 
       <View
