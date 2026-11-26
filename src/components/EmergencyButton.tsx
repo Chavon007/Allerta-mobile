@@ -3,17 +3,16 @@ import { View, Text, Pressable, Animated, Easing } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useEmergencyState } from "@/store/emergencyStore";
-import { useGetUserAllEmergency, useFetchContact } from "@/api/emergency";
+import { useGetActiveEmergency, useFetchContact } from "@/api/emergency";
 
 const EmergencyButton = () => {
   const router = useRouter();
   const pulseAnim = useRef(new Animated.Value(0)).current;
 
   const setEmergencyId = useEmergencyState((e) => e.setEmergencyId);
-  const { data: emergencies } = useGetUserAllEmergency();
+  const { data: active } = useGetActiveEmergency();
   const { data: contacts } = useFetchContact();
 
-  const active = emergencies?.find((e) => e.status === "active");
   const contactCount = contacts?.length ?? 0;
 
   useEffect(() => {

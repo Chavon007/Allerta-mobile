@@ -4,9 +4,11 @@ import { z } from "zod";
 export const SignupSchema = z
   .object({
     full_name: z.string().min(5, "Full name must be at least 5 characters"),
-    email: z.string().email("Enter a valid email address"),
+    email: z.string().trim().toLowerCase().email("Enter a valid email address"),
     username: z
       .string()
+      .trim()
+      .toLowerCase()
       .min(3, "Username must be at least 3 characters")
       .regex(
         /^[a-zA-Z0-9_]+$/,
@@ -32,9 +34,11 @@ export const LoginSchema = z.object({
 
 export const UpdateProfileSchema = z.object({
   full_name: z.string().min(5, "Full name must be at least 5 characters"),
-  email: z.string().email("Use a valid email address"),
+  email: z.string().trim().toLowerCase().email("Use a valid email address"),
   username: z
     .string()
+    .trim()
+    .toLowerCase()
     .min(3, "Username must be at least 3 characters")
     .regex(
       /^[a-zA-Z0-9_]+$/,

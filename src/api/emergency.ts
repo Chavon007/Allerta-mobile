@@ -5,13 +5,24 @@ import {
   MyEmergency,
 } from "@/types/Emergency";
 import { AddContactDTO } from "@/schema/contactSchema";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import apiClient from "@/service/api";
 import Toast from "react-native-toast-message";
 import { EmergencyContact } from "@/types/Emergency";
 import { EmergencyDTO, emergencySchema } from "@/schema/emergencySchema";
 export interface ReceivedEmergency extends Emergency {
   user: { id: number; full_name: string; username?: string };
+}
+
+export interface Page<T> {
+  data: T[];
+  current_page: number;
+  last_page: number;
 }
 type sendLocationVars = EmergencyDTO & { id: number };
 
@@ -81,15 +92,34 @@ const respondEmergency = async ({
   });
   return response.data;
 };
-const getUserAllEmergency = async (): Promise<MyEmergency[]> => {
-  const response = await apiClient.get("/emergency/mine");
+const getUserAllEmergency = async (
+  page: number,
+): Promise<Page<MyEmergency>> => {
+  const response = await apiClient.get("/emergency/mine", {
+    params: { page },
+  });
   return response.data;
 };
 
-export const useGetUserAllEmergency = () => {
+const getActiveEmergency = async (): Promise<MyEmergency | null> => {
+  const resposne = await apiClient.get("/emergency/mine");
+
+  return resposne.data;
+};
+
+export const useGetActiveEmergency = () => {
   return useQuery({
+    queryKey: ["active-emergency"],
+    queryFn: getActiveEmergency,
+  });
+};
+export const useGetUserAllEmergency = () => {
+  return useInfiniteQuery({
     queryKey: ["my-emergency"],
-    queryFn: getUserAllEmergency,
+    queryFn: ({ pageParam }) => getUserAllEmergency(pageParam),
+    initialPageParam: 1,
+    getNextPageParam: (last) =>
+      last.current_page < last.last_page ? last.current_page + 1 : undefined,
   });
 };
 export const useAddContactMutation = () => {
@@ -194,6 +224,7 @@ export const useEndEmergency = () => {
     onSuccess: (_data, id) => {
       queryClient.invalidateQueries({ queryKey: ["emergency", id] });
       queryClient.invalidateQueries({ queryKey: ["my-emergency"] });
+      queryClient.invalidateQueries({ queryKey: ["active-emergency"] });
       Toast.show({
         type: "success",
         text1: "Emergency has ended",

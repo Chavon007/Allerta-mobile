@@ -7,12 +7,12 @@
     "development": {
       "developmentClient": true,
       "distribution": "internal",
+      "environment": "development",
       "android": {
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_BASE_URL": "http://172.31.48.214:8000/api",
-        "EXPO_PUBLIC_GEOAPIFY_KEY": "a626b9f72c7f4936826cc99793370069"
+        "EXPO_PUBLIC_BASE_URL": "http://172.31.48.214:8000/api"
       }
     },
     "preview": {

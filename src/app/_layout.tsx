@@ -20,6 +20,7 @@ import { useAuthStore } from "@/store/authStore";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import ActiveEmergencyRestorer from "@/components/ActiveEmergencyRestorer";
 import "@/tasks/locationTask";
+import OfflineBanner from "@/components/OfflineBanner";
 import PushTokenRegistrar from "@/components/PushTokenRegistrar";
 SplashScreen.preventAutoHideAsync();
 
@@ -78,6 +79,7 @@ export default function RootLayout() {
     <QueryClientProvider client={queryClient}>
       {token && <ActiveEmergencyRestorer />}
       {token && <PushTokenRegistrar />}
+      <OfflineBanner />
       <Stack
         screenOptions={{
           headerShown: false,

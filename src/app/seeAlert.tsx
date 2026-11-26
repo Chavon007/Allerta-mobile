@@ -1,49 +1,53 @@
 import { View, Text, ScrollView, ActivityIndicator } from "react-native";
-import React from "react";
+import React, { useState } from "react";
 import Toast from "react-native-toast-message";
 import AntDesign from "@expo/vector-icons/AntDesign";
-import {
-  SafeAreaView,
-  useSafeAreaInsets,
-} from "react-native-safe-area-context";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import Button from "@/components/Button";
 import { Linking } from "react-native";
 import * as Clipboard from "expo-clipboard";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useState } from "react";
 import Feather from "@expo/vector-icons/Feather";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import LocationUpdateCard from "@/components/locationUpdateCard";
 import LocationMap from "@/components/LocationMap";
-
+import ErrorState from "@/components/ErrorState";
 import {
   useRecieveEmergency,
   useRespondEmergency,
   useGetEmergency,
 } from "@/api/emergency";
+
 export default function seeAlert() {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
   const [notified, setNotified] = useState(false);
   const { id } = useLocalSearchParams<{ id?: string }>();
-  const { data: list = [], isLoading: listLoading } = useRecieveEmergency();
+  const {
+    data: list = [],
+    isLoading: listLoading,
+    isError: listError,
+    refetch: refetchList,
+  } = useRecieveEmergency();
   const { mutate, isPending } = useRespondEmergency();
 
   const emergencyId = id ? Number(id) : (list[0]?.id ?? null);
   const received = list.find((e) => e.id === emergencyId);
-  const { data: live, isLoading: liveLoading } = useGetEmergency(
-    emergencyId,
-    5000,
-  );
+  const {
+    data: live,
+    isLoading: liveLoading,
+    isError: liveError,
+    refetch: refetchLive,
+  } = useGetEmergency(emergencyId, 5000);
 
   const current = live ?? received;
 
   const hasEnded =
     live?.status === "ended" ||
-    (!listLoading && emergencyId !== null && !received);
-  const noEmergency = !listLoading && emergencyId == null;
-  const fullName = received?.user.full_name ?? "Someone";
+    (!listLoading && !listError && emergencyId !== null && !received);
+  const noEmergency = !listLoading && !listError && emergencyId == null;
+
+  const fullName = received?.user?.full_name ?? "Someone";
   const firstName = fullName.trim().split(" ")[0];
   const coords =
     current?.latest_latitude != null && current?.latest_longitude != null
@@ -62,13 +66,11 @@ export default function seeAlert() {
     : "--";
 
   const address = current?.latest_address ?? "Live location available";
+
   const onSubmit = () => {
     if (emergencyId === null) return;
     mutate(
-      {
-        id: emergencyId,
-        name: firstName,
-      },
+      { id: emergencyId, name: firstName },
       { onSuccess: () => setNotified(true) },
     );
   };
@@ -82,15 +84,41 @@ export default function seeAlert() {
 
   const copyCoords = async () => {
     if (!coords) return;
-
     await Clipboard.setStringAsync(`${coords.latitude}, ${coords.longitude}`);
     Toast.show({ type: "success", text1: "Coordinates copied" });
   };
+
+  // ---- all hooks are above this line ----
 
   if (listLoading || (emergencyId !== null && liveLoading && !received)) {
     return (
       <SafeAreaView className="flex-1 items-center justify-center bg-emergencyLight">
         <ActivityIndicator size="large" color="#D91E2A" />
+      </SafeAreaView>
+    );
+  }
+
+  // Errors first, so a failed request is never shown as "ended"
+  if (listError || (liveError && !current)) {
+    return (
+      <SafeAreaView className="flex-1 items-center justify-center bg-background1 px-6">
+        <StatusBar style="dark" />
+        <View className="w-full gap-4">
+          <ErrorState
+            message="Couldn't load this alert. Check your connection and try again."
+            onRetry={() => {
+              refetchList();
+              refetchLive();
+            }}
+          />
+          <Button
+            className="bg-white"
+            textClassName="text-text3"
+            onPress={() => router.replace("/recipient")}
+          >
+            Back to alerts
+          </Button>
+        </View>
       </SafeAreaView>
     );
   }
@@ -120,6 +148,7 @@ export default function seeAlert() {
       </SafeAreaView>
     );
   }
+
   return (
     <SafeAreaView className="flex-1 bg-emergencyLight" edges={["top"]}>
       <StatusBar style="dark" />
@@ -145,6 +174,14 @@ export default function seeAlert() {
           </Text>
         </View>
 
+        {liveError && (
+          <View className="rounded-xl bg-white px-3 py-2">
+            <Text className="font-bodyMedium text-xs text-emergency">
+              Can't refresh right now. Showing the last known location.
+            </Text>
+          </View>
+        )}
+
         {coords ? (
           <LocationMap address={address} coords={coords} />
         ) : (
@@ -161,9 +198,9 @@ export default function seeAlert() {
           username={received?.user?.username}
         />
 
-        <View className=" gap-2 flex-row justify-between">
+        <View className="flex-row justify-between gap-2">
           <Button
-            className="bg-white  w-[170px]"
+            className="w-[170px] bg-white"
             textClassName="text-text3"
             onPress={openMaps}
             disabled={!coords}
@@ -177,7 +214,7 @@ export default function seeAlert() {
           </Button>
 
           <Button
-            className="bg-white w-[150px]"
+            className="w-[150px] bg-white"
             textClassName="text-text3"
             onPress={copyCoords}
             disabled={!coords}
@@ -227,7 +264,7 @@ export default function seeAlert() {
           )}
         </View>
 
-        <Text className="text-center pb-5 font-body text-xs text-text1">
+        <Text className="pb-5 text-center font-body text-xs text-text1">
           Allerta is a trusted-contact safety layer. For police, ambulance or
           fire, contact official emergency services.
         </Text>

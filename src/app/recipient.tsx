@@ -1,14 +1,22 @@
-import { View, Text, Pressable, ActivityIndicator, ScrollView } from "react-native";
+import {
+  View,
+  Text,
+  Pressable,
+  ActivityIndicator,
+  ScrollView,
+} from "react-native";
 import { Link, useRouter } from "expo-router";
 import { useAuthStore } from "@/store/authStore";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRecieveEmergency } from "@/api/emergency";
 import ReceivedEmergencyCard from "@/components/ReceivedEmergencyCard";
+import ErrorState from "@/components/ErrorState";
+import EmptyState from "@/components/EmptyState";
 
 const Recipient = () => {
   const router = useRouter();
   const name = useAuthStore((n) => n.user?.full_name);
-  const { data: list = [], isLoading } = useRecieveEmergency();
+  const { data: list = [], isLoading, isError, refetch } = useRecieveEmergency();
 
   const firstName = name?.trim().split(" ")[0];
   const count = list.length;
@@ -29,6 +37,13 @@ const Recipient = () => {
         <View className="flex-1 justify-center">
           {isLoading ? (
             <ActivityIndicator size="large" color="#eef2f6" />
+          ) : isError && count === 0 ? (
+            <View className="mx-auto w-[90%]">
+              <ErrorState
+                message="Couldn't check for alerts."
+                onRetry={refetch}
+              />
+            </View>
           ) : count > 0 ? (
             <ScrollView
               showsVerticalScrollIndicator={false}
@@ -50,10 +65,12 @@ const Recipient = () => {
               ))}
             </ScrollView>
           ) : (
-            <View className="mx-auto w-[90%] rounded-3xl bg-background1 p-6">
-              <Text className="text-center font-bodyMedium text-sm text-text3">
-                No active emergency right now.
-              </Text>
+            <View className="mx-auto w-[90%]">
+              <EmptyState
+                icon="shield"
+                title="No active emergency"
+                text="When someone in your circle needs help, it will show here."
+              />
             </View>
           )}
         </View>
